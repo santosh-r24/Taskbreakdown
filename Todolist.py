@@ -5,7 +5,8 @@ import wave
 from logzero import logger
 from dataclasses import dataclass, asdict
 from pathlib import Path
-import streamlit as st 
+import streamlit as st
+import config
 
 
 @dataclass
@@ -73,7 +74,7 @@ def ingest_query(query,model):
     return response
 
 if __name__ == "__main__":
-    genai.configure(api_key="AIzaSyAEAi0ejXrOsg00oRULMISTpVhyzn18510")
+    genai.configure(api_key=config.google_api_key)
     model = genai.GenerativeModel('gemini-1.5-flash')
     stream_params = StreamParams()
     recorder = Recorder(stream_params)
