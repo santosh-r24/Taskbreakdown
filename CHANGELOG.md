@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] - 2024-06-23
+
+Updates pushed in this commit - 
+
+### Added
+- Defined System behavior, the agent now respons to only questions pertaining to taskbreakdown
+ 
+### Changed
+ 
+### Fixed
+
 ## [Unreleased] - 2024-06-17
 
 Updates pushed in this commit - 
