@@ -1,2 +1,4 @@
 audio/
 config.py
+user_data.db
+media/
