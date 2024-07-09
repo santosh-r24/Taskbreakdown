@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] - 2024-07-08
+ 
+Updates pushed in this commit.
+ 
+### Added
+- Added Home page
+ 
+### Changed
+ 
+### Fixed
+
+## [Unreleased] - 2024-07-06
+ 
+Updates pushed in this commit.
+ 
+### Added
+- Added Chat interface.
+- Added memory
+- Saves the conversation and reloads it in database
+- added login via google oauth
+ 
+### Changed
+- Removed audio input
+- Added a limit of 4000 tokens, so that responses can be quicker. Post which old conversations will be summarised
+ 
+### Fixed
+
 ## [Unreleased] - 2024-06-23
 
 Updates pushed in this commit - 
@@ -14,10 +41,10 @@ Updates pushed in this commit -
 ### Changed
  
 ### Fixed
-
+- If token length moves over 4000 tokens, the previous conversations will be summarised.
 ## [Unreleased] - 2024-06-17
 
-Updates pushed in this commit - 
+Updates pushed in this commit.
 
 ### Added
 - Directly added both voice and text input 
@@ -30,7 +57,7 @@ Updates pushed in this commit -
 
 ## [Unreleased] - 2024-06-11
  
-Here we write upgrades to the software as a whole.
+Updates pushed in this commit.
  
 ### Added
 - Added PoC functionalities

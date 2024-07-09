@@ -2,16 +2,12 @@
 import google.generativeai as genai
 from logzero import logger
 from pathlib import Path
-from audiorecorder import audiorecorder
 import streamlit as st
-import config
 import os
 import database_functions as db_funcs
-import json
 
 
 os.environ["PATH"] += os.pathsep + r"C:ffmpeg\ffmpeg\bin"
-genai.configure(api_key=config.google_api_key)
 
 def generate_response(messages,model,audio=None, max_tokens = 4000):
     """
@@ -63,13 +59,13 @@ if __name__ == "__main__":
                     b. If not, then ask helping quertions to get additional context to make the goal fit the SMART framework. 
                 2. If a question doesn't fit a task breakdown, return "Sorry, I can't help with this request."  
                 """
-    gen_model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_behavior)
     file_path = Path("audio").mkdir(parents=True, exist_ok=True)
-
-    if 'user_info' not in st.session_state:
-        st.error("Please login, before proceeding.")
+    if 'user_info' and 'gemini_api_key' not in st.session_state:
+        st.error("Please login and set your gemini key, before proceeding.")
         st.stop()
     else:
+        genai.configure(api_key=st.session_state["gemini_api_key"])
+        gen_model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_behavior)
         user_info = st.session_state['user_info']
         user_id = st.session_state['user_id']
         sql_db, cursor = db_funcs.initialize_database()
