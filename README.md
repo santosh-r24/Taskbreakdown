@@ -1,9 +1,9 @@
 # ToDoListAgent
 
-This is a PoC for a todolist agent, which breaks down tasks. This is a very simple PoC.
+This is a PoC for a todolist agent, which breaks down big goals into smaller tasks. This is a very simple PoC. Integrated memory into conversations now.
 
 ### Features:-
-1. Takes in an audio or text input from user.
+1. Gets input from user, and ensures it follows the SMART framework.
 2. Uses Gemini Flash 1.5 to answer the prompt(if it adheres to the SMART framework).
 3. Uses streamlit as an interface. 
 
@@ -11,13 +11,15 @@ This is a PoC for a todolist agent, which breaks down tasks. This is a very simp
 streamlit run Todolist.py
 
 ### Example prompts
-1. I'm a 25 year old ML engineer, with 3 years experience at a computer vision startup based out of Chennai. I want to switch jobs in the next 30 days. Give me a detailed breakdown on a day/day basis on how to achieve it.
 2. I want to run a 10K in 1hour, currently I run a 10K in 70mins. Give me a breakdown on training regimen, i have 1 month to my race
 
-#### References
-https://github.com/jiaaro/pydub/issues/346#issuecomment-608084856 - converting pydub.audio_segment to np.array
 
 #### Challenges I'm currently facing
+
+Date - 2024/07/06
+Have to think about unique features to stand out from usual chatgpt. 
+1. Currently planning to integrate google calendar 
+2. Introduce a voice assistant, that will motivate you as you finish goals. 
 
 Date - 2024/06/17
 I wanted to incorporate a light weight ASR model, using distilled version of whisper to transcribe audio to text. Then, send this text as an input to gemini. Realised this way i can do additional NLP preprocessing to the text instead of directly feeding the input to the model. 

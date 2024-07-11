@@ -82,12 +82,12 @@ if __name__ == "__main__":
             st.session_state['messages'] = chat_messages
         
         # Display chat messages from history on app rerun
-        for message in st.session_state.messages:
+        for message in st.session_state['messages']:
             with st.chat_message(message["role"]):
                 st.markdown(message["parts"][0])
         
         # React to user input
-        if prompt:= st.chat_input("Type down your task"):
+        if prompt:= st.chat_input("Type down your query"):
             st.chat_message("user").markdown(prompt)
             st.session_state.messages.append({"role":"user", "parts": [prompt]})
             db_funcs.save_chat_message(cursor, sql_db, user_id, "user", prompt)

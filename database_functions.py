@@ -1,11 +1,12 @@
+import streamlit as st
 import sqlite3
 import json
 from cryptography.fernet import Fernet
-import config
 from logzero import logger
 
 def load_key():
-    return Fernet(config.encryption_key)
+    fernet_key_str = st.secrets["encryption_key"]
+    return Fernet(fernet_key_str.encode())
 
 cipher = load_key()
 
