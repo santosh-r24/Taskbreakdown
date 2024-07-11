@@ -3,17 +3,33 @@ from google_auth_oauthlib.flow import Flow
 import google.auth.transport.requests
 import google.oauth2.id_token
 import os 
-import config
 from logzero import logger
 import database_functions as db_funcs
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
-os.environ['GOOGLE_CLIENT_ID'] = config.client_id
-flow = Flow.from_client_secrets_file(
-    'client_secrets.json',
+os.environ['GOOGLE_CLIENT_ID'] = st.secrets['google_oauth']['client_id']
+# flow = Flow.from_client_secrets_file(
+#     'client_secrets.json',
+#     scopes=['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/calendar'],
+#     redirect_uri='http://localhost:8501'
+# )
+
+flow = Flow.from_client_config(
+    {
+        "web": {
+            "client_id": st.secrets["google_oauth"]["client_id"],
+            "project_id": st.secrets["google_oauth"]["project_id"],
+            "auth_uri": st.secrets["google_oauth"]["auth_uri"],
+            "token_uri": st.secrets["google_oauth"]["token_uri"],
+            "auth_provider_x509_cert_url": st.secrets["google_oauth"]["auth_provider_x509_cert_url"],
+            "client_secret": st.secrets["google_oauth"]["client_secret"],
+            "redirect_uris": st.secrets["google_oauth"]["redirect_uris"]
+        }
+    },
     scopes=['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/calendar'],
-    redirect_uri='http://localhost:8501'
+    redirect_uri= st.secrets["google_oauth"]["redirect_uris"][0]
 )
+
 sql_db, cursor = db_funcs.initialize_database()
 
 def google_oauth():
@@ -58,9 +74,14 @@ if __name__ == "__main__":
 
     if st.session_state['user_info']:
         user_info = st.session_state['user_info']
-        logger.debug(user_info)
-        st.session_state['user_id'] = user_info['given_name']
         email = user_info['email']
+        logger.debug(user_info)
+        st.session_state['user_id'] = db_funcs.get_user_id(cursor, user_info['email'])
+        if not st.session_state['user_id']:
+            db_funcs.save_user(cursor, sql_db, user_info['email'], user_info['name'], user_info['picture'])
+            st.session_state['user_id'] = db_funcs.get_user_id(cursor, user_info['email'])
+    
+        
         st.write(f"Welcome {user_info['given_name']} ")
         api_key = db_funcs.get_user_api_key(cursor, email)
         logger.debug(f"api key = {api_key}")

@@ -9,10 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Updates pushed in this commit.
  
 ### Added
-- Added Home page
+- Added input to get and use gemini key
  
 ### Changed
- 
+- Added instructions on how to use the tool
+- Using streamlit secrets instead of config to store secrets
 ### Fixed
 
 ## [Unreleased] - 2024-07-06
