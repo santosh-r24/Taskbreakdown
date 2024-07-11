@@ -8,11 +8,6 @@ import database_functions as db_funcs
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 os.environ['GOOGLE_CLIENT_ID'] = st.secrets['google_oauth']['client_id']
-# flow = Flow.from_client_secrets_file(
-#     'client_secrets.json',
-#     scopes=['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/calendar'],
-#     redirect_uri='http://localhost:8501'
-# )
 
 flow = Flow.from_client_config(
     {
