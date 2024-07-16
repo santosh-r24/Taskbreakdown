@@ -25,7 +25,7 @@ flow = Flow.from_client_config(
     redirect_uri= st.secrets["google_oauth"]["redirect_uris"][0]
 )
 
-sql_db, cursor = db_funcs.initialize_database()
+db, cursor = db_funcs.initialize_database()
 
 def google_oauth():
     authorization_url, state = flow.authorization_url(prompt='consent')
@@ -71,12 +71,9 @@ if __name__ == "__main__":
         user_info = st.session_state['user_info']
         email = user_info['email']
         logger.debug(user_info)
-        st.session_state['user_id'] = db_funcs.get_user_id(cursor, user_info['email'])
-        if not st.session_state['user_id']:
-            db_funcs.save_user(cursor, sql_db, user_info['email'], user_info['name'], user_info['picture'])
-            st.session_state['user_id'] = db_funcs.get_user_id(cursor, user_info['email'])
+        if not db_funcs.is_user_present(cursor, email):
+            db_funcs.save_user(cursor, db, user_info['email'], user_info['name'], user_info['picture'])
     
-        
         st.write(f"Welcome {user_info['given_name']} ")
         api_key = db_funcs.get_user_api_key(cursor, email)
         logger.debug(f"api key = {api_key}")
@@ -87,13 +84,13 @@ if __name__ == "__main__":
             api_key_input = st.text_input("Enter your Gemini API Key", type="password")
             if api_key_input:
                 st.session_state['gemini_api_key'] = api_key_input
-                db_funcs.save_user(cursor, sql_db, email,user_info['name'],user_info['picture'],st.session_state['gemini_api_key'])
+                db_funcs.save_user(cursor, db, email,user_info['name'],user_info['picture'],st.session_state['gemini_api_key'])
                 api_key = db_funcs.get_user_api_key(cursor, email)
-                st.write(f"API key saved successfully{api_key}")
+                st.write(f"API key saved successfully")
                 # api_key = db_funcs.get_user_api_key(cursor, email)
 
         if st.session_state['gemini_api_key']:
-            logger.debug(f"api key in session {api_key}")
+            # logger.debug(f"api key in session {st.session_state['gemini_api_key']}")
             st.write("You can now head onto the Todolist tab, to talk to the assistant :)")
             
     else:

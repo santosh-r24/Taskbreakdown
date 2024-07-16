@@ -5,7 +5,8 @@ This is a PoC for a todolist agent, which breaks down big goals into smaller tas
 ### Features:-
 1. Gets input from user, and ensures it follows the SMART framework.
 2. Uses Gemini Flash 1.5 to answer the prompt(if it adheres to the SMART framework).
-3. Uses streamlit as an interface. 
+3. Uses postgres as database to store chat 
+4. Uses streamlit as an interface. 
 
 ### Usage
 streamlit run Todolist.py

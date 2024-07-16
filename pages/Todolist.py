@@ -67,9 +67,8 @@ if __name__ == "__main__":
         genai.configure(api_key=st.session_state["gemini_api_key"])
         gen_model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_behavior)
         user_info = st.session_state['user_info']
-        user_id = st.session_state['user_id']
-        sql_db, cursor = db_funcs.initialize_database()
-        # db_funcs.update_roles_in_database(cursor, sql_db)
+        db, cursor = db_funcs.initialize_database()
+        # db_funcs.update_roles_in_database(cursor, db)
         # db_funcs.view_first_few_rows()
 
         #initialising chat history
@@ -78,7 +77,7 @@ if __name__ == "__main__":
         
         # Load previous chat messages from the database
         if not st.session_state['messages']:
-            chat_messages = db_funcs.get_user_chat_messages(cursor, user_id)
+            chat_messages = db_funcs.get_user_chat_messages(cursor, user_info['email'])
             st.session_state['messages'] = chat_messages
         
         # Display chat messages from history on app rerun
@@ -90,11 +89,11 @@ if __name__ == "__main__":
         if prompt:= st.chat_input("Type down your query"):
             st.chat_message("user").markdown(prompt)
             st.session_state.messages.append({"role":"user", "parts": [prompt]})
-            db_funcs.save_chat_message(cursor, sql_db, user_id, "user", prompt)
+            db_funcs.save_chat_message(cursor, db, user_info['email'], "user", prompt)
             
             response = generate_response(messages=st.session_state['messages'], model=gen_model)
             with st.chat_message("assistant"):
                 st.markdown(response.text)
             # Add assistant response to chat history
             st.session_state['messages'].append({"role":"model", "parts": [response.text]})
-            db_funcs.save_chat_message(cursor, sql_db, user_id, "model", response.text)
+            db_funcs.save_chat_message(cursor, db, user_info['email'], "model", response.text)

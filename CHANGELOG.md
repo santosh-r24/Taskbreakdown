@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Updates pushed in this commit.
  
 ### Added
+ 
+### Changed
+- changed database to heroku postgres, now saves chat to postgres 
+### Fixed
+
+## [Unreleased] - 2024-07-08
+ 
+Updates pushed in this commit.
+ 
+### Added
 - Added input to get and use gemini key
  
 ### Changed
