@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] - 2024-07-08
+## [Unreleased] - 2024-07-16
  
 Updates pushed in this commit.
  
@@ -25,6 +25,7 @@ Updates pushed in this commit.
 - Added instructions on how to use the tool
 - Using streamlit secrets instead of config to store secrets
 ### Fixed
+- pyscopg library fix in requirements.txt
 
 ## [Unreleased] - 2024-07-06
  
