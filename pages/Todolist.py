@@ -100,8 +100,8 @@ if __name__ == "__main__":
     initialise_ui()
 
     # file_path = Path("audio").mkdir(parents=True, exist_ok=True)
-    if 'user_info' and 'gemini_api_key' not in st.session_state:
-        st.error("Please login and set your gemini key, before proceeding.")
+    if not st.session_state['user_info'] and st.session_state['gemini_api_key']:
+        st.error("Please login and set your gemini key, before proceeding.") 
         st.stop()
     else:
         #Initial resource setup 

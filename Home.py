@@ -22,7 +22,7 @@ flow = Flow.from_client_config(
         }
     },
     scopes=['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/calendar'],
-    redirect_uri= st.secrets["google_oauth"]["redirect_uris"][0]
+    redirect_uri= st.secrets["google_oauth"]["redirect_uris"][1]
 )
 
 def google_oauth():
@@ -85,11 +85,16 @@ if __name__ == "__main__":
         Update_key = st.button(label="Update Gemini key")
         if Update_key:
             api_key_input = st.text_input("Enter your Gemini API Key", type="password")
-            if api_key_input:
+            submit = st.button(label="Submit")
+            if submit and api_key_input is not None:
                 st.session_state['gemini_api_key'] = api_key_input
                 db_funcs.save_user(cursor, db, st.session_state['user_info']['email'], st.session_state['user_info']['name'], st.session_state['user_info']['picture'], st.session_state['gemini_api_key'])
                 st.write(f"API key saved successfully")
-
+            else:
+                st.write(f"API key can't be empty")
+                logger.debug(st.session_state['gemini_api_key'])
+                
+            logger.debug(st.session_state['gemini_api_key'])
         api_key = get_cached_api_key(st.session_state['user_info']['email'])
         st.session_state['gemini_api_key'] = api_key
         logger.debug(f"api key = {api_key}")
