@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] - 2024-07-22
+ 
+Updates pushed in this commit.
+ 
+### Added
+- The model now retrieves previous chats as context. older chats are summarised, while newer chat is used as is for better precision.
+### Changed
+- Completely removed obsolete code 
+- Used st.cache to limit the number of database calls (for messages and summary)
+- cleaned the code, by fucntionising. All variables are stored in st.session_state.
+- Updated README.md 
+### Fixed
+
 ## [Unreleased] - 2024-07-16
  
 Updates pushed in this commit.

@@ -25,8 +25,6 @@ flow = Flow.from_client_config(
     redirect_uri= st.secrets["google_oauth"]["redirect_uris"][0]
 )
 
-db, cursor = db_funcs.initialize_database()
-
 def google_oauth():
     authorization_url, state = flow.authorization_url(prompt='consent')
     st.session_state['state'] = state
@@ -47,52 +45,58 @@ def process_callback():
             return None
     return None
 
-if __name__ == "__main__":
+def initial_display_elements():
     st.markdown("# Home 📝")
     st.sidebar.markdown("# Home 📝")
     st.subheader("Welcome! This is a smart assistant to help break down your big seemingly complex tasks, into smaller steps that makes it easier to build on each day!")
     
     st.markdown("""
     ## How to Use This Tool:
-    1. **Login with Google**: Use the button below to log in with your Google account.
-    2. **Enter Gemini API Key**: After logging in, enter your Gemini API key. If you don't have one, follow these steps to get it:
+    1. **Sign up as a tester**: Send me a mail to sign up as a tester. After confirmation follow from step 2.  
+    2. **Login with Google**: Use the button below to log in with your Google account.
+    3. **Enter Gemini API Key**: After logging in, enter your Gemini API key. If you don't have one, follow these steps to get it:
        - Go to [Gemini Studio](https://aistudio.google.com/app/apikey) and sign up or log in.
        - Navigate to the API section in your account settings.
        - Generate a new API key and copy it.
-    3. **Navigate to the Todolist Tab**: Once your API key is saved, go to the Todolist tab to start using the assistant.
+    4. **Navigate to the Todolist Tab**: Once your API key is saved, go to the Todolist tab to start using the assistant.
     """)
-     
+
+@st.cache_data(show_spinner=False)
+def get_cached_api_key(email:str):
+    db, cursor = db_funcs.initialize_database()
+    return db_funcs.get_user_api_key(cursor, email)
+
+if __name__ == "__main__":
+    initial_display_elements()
+    db, cursor = db_funcs.initialize_database()
+
     if 'user_info' not in st.session_state:
         st.session_state['user_info'] = None
         st.session_state['gemini_api_key'] = None
         st.markdown(''' **You're not logged in, please login to use the assistant** ''')
 
     if st.session_state['user_info']:
-        user_info = st.session_state['user_info']
-        email = user_info['email']
-        logger.debug(user_info)
-        if not db_funcs.is_user_present(cursor, email):
-            db_funcs.save_user(cursor, db, user_info['email'], user_info['name'], user_info['picture'])
+        logger.debug(st.session_state['user_info'])
+        if not db_funcs.is_user_present(cursor, st.session_state['user_info']['email']):
+            db_funcs.save_user(cursor, db, st.session_state['user_info']['email'], st.session_state['user_info']['name'], st.session_state['user_info']['picture'])
     
-        st.write(f"Welcome {user_info['given_name']} ")
-        api_key = db_funcs.get_user_api_key(cursor, email)
-        logger.debug(f"api key = {api_key}")
-        if api_key:
-            st.session_state['gemini_api_key'] = api_key
-            st.write("API Key found and loaded")
-        else:
+        st.write(f"Welcome {st.session_state['user_info']['given_name']} ")
+        
+        Update_key = st.button(label="Update Gemini key")
+        if Update_key:
             api_key_input = st.text_input("Enter your Gemini API Key", type="password")
             if api_key_input:
                 st.session_state['gemini_api_key'] = api_key_input
-                db_funcs.save_user(cursor, db, email,user_info['name'],user_info['picture'],st.session_state['gemini_api_key'])
-                api_key = db_funcs.get_user_api_key(cursor, email)
+                db_funcs.save_user(cursor, db, st.session_state['user_info']['email'], st.session_state['user_info']['name'], st.session_state['user_info']['picture'], st.session_state['gemini_api_key'])
                 st.write(f"API key saved successfully")
-                # api_key = db_funcs.get_user_api_key(cursor, email)
 
+        api_key = get_cached_api_key(st.session_state['user_info']['email'])
+        st.session_state['gemini_api_key'] = api_key
+        logger.debug(f"api key = {api_key}")
         if st.session_state['gemini_api_key']:
-            # logger.debug(f"api key in session {st.session_state['gemini_api_key']}")
-            st.write("You can now head onto the Todolist tab, to talk to the assistant :)")
-            
+            st.session_state['gemini_api_key'] = api_key
+            st.write("API Key found and loaded")
+            st.write("You can now head onto the Todolist tab, to talk to the assistant :)")    
     else:
         user_info = process_callback()
         if user_info:
@@ -104,5 +108,6 @@ if __name__ == "__main__":
 
     st.markdown("""
     ---
-    **Need help? Contact support at [santoshramakrishnan24@gmail.com](mailto:santoshramakrishnan24@gmail.com)**
+    **Need help? Contact support at [santoshramakrishnan24@gmail.com](mailto:santoshramakrishnan24@gmail.com) \
+    Reach out to me on [Twitter](https://x.com/SantoshKutti24)**
     """)

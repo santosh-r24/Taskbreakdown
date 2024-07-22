@@ -1,13 +1,54 @@
 """A LLM powered todolist agent, that breaks down tasks given by user."""
 import google.generativeai as genai
 from logzero import logger
-from pathlib import Path
 import streamlit as st
-import os
 import database_functions as db_funcs
 
+def initialise_ui():
+    """
+    Sets the initial UI display elements.
+    """
+    st.header("AI-Powered To-Do List")
+    st.markdown(''' :blue-background[Tip: Type your goal along with the timeline you're looking to achieve it. Being Specific helps for a detailed breakdown!] ''')
+    st.divider()
 
-os.environ["PATH"] += os.pathsep + r"C:ffmpeg\ffmpeg\bin"
+def initialise_resources():
+    """
+    Initializes resources (gemini model, database, and system behaviour), and loads previous chat history. 
+    """
+    genai.configure(api_key=st.session_state["gemini_api_key"])
+    system_behavior = """ 
+                You are a Smart Assistant designed to break down tasks for users based on the SMART framework for goals. 
+                1. Asses if the user has given a goal and details adhering to the SMART framework.  
+                    a. If yes, then provide detailed, actionable steps first grouped by week, and further broken down by days tailored to each user's input.
+                    b. If not, then ask helping quertions to get additional context to make the goal fit the SMART framework. 
+                2. If a question doesn't fit a task breakdown, return "Sorry, I can't help with this request."  
+                """
+    gen_model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_behavior)
+    db, cursor = db_funcs.initialize_database()
+    
+    #initialising chat history and summary
+    if 'display_messages' not in st.session_state:
+        st.session_state['display_messages'] = []
+        st.session_state['messages'] = []
+        st.session_state['latest_summary'] = None
+
+    # Load previous chat messages from the database
+    if not st.session_state['display_messages']:
+        entire_chat_messages = cached_get_user_chat_messages(st.session_state['user_info']['email'], None)
+        st.session_state['display_messages'] = entire_chat_messages
+    
+    return gen_model, db, cursor
+
+@st.cache_data
+def cached_get_user_chat_messages(email: str, timestamp=None):
+    db, cursor = db_funcs.initialize_database()
+    return db_funcs.get_user_chat_messages(cursor, email, timestamp)
+
+@st.cache_data
+def cached_get_latest_summary(email: str):
+    db, cursor = db_funcs.initialize_database()
+    return db_funcs.get_latest_summary(cursor, email)
 
 def generate_response(messages, model, max_tokens = 4000, db=None, cursor=None):
     """
@@ -28,6 +69,7 @@ def generate_response(messages, model, max_tokens = 4000, db=None, cursor=None):
         logger.debug("Summarizing older messages to reduce token count.")
         summary = summarize_history(messages[-15:-5], model)
         db_funcs.save_summary(cursor, db, st.session_state['user_info']['email'], summary)
+        st.session_state['latest_summary'] = summary
         messages = [{"role": "model", "parts": [summary]}] + messages[-5:]
         # when new summary is generated, st.session_state['messages'] contain only the 5 most recent messages
         st.session_state['messages'] = messages[-5:]
@@ -54,40 +96,6 @@ def summarize_history(messages, model):
     summary = response.candidates[0].content.parts[0].text
     return summary
 
-def initialise_resources():
-    """
-    Initializes resources (gemini model, database, and system behaviour), and loads previous chat history. 
-    """
-    genai.configure(api_key=st.session_state["gemini_api_key"])
-    gen_model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_behavior)
-    user_info = st.session_state['user_info']
-    db, cursor = db_funcs.initialize_database()
-    system_behavior = """ 
-                You are a Smart Assistant designed to break down tasks for users based on the SMART framework for goals. 
-                1. Asses if the user has given a goal and details adhering to the SMART framework.  
-                    a. If yes, then provide detailed, actionable steps first grouped by week, and further broken down by days tailored to each user's input.
-                    b. If not, then ask helping quertions to get additional context to make the goal fit the SMART framework. 
-                2. If a question doesn't fit a task breakdown, return "Sorry, I can't help with this request."  
-                """
-
-    #initialising chat history and summary
-    if 'display_messages' not in st.session_state:
-        st.session_state['display_messages'] = []
-        st.session_state['messages'] = []
-        st.session_state['latest_summary'] = None
-
-    # Load previous chat messages from the database
-    if not st.session_state['display_messages']:
-        entire_chat_messages = db_funcs.get_user_chat_messages(cursor, user_info['email'], None)
-        st.session_state['display_messages'] = entire_chat_messages
-    
-    return gen_model, db, cursor, system_behavior
-
-def initialise_ui():
-    st.header("AI-Powered To-Do List")
-    st.markdown(''' :blue-background[Tip: Type your goal along with the timeline you're looking to achieve it. Being Specific helps for a detailed breakdown!] ''')
-    st.divider()
-
 if __name__ == "__main__":
     initialise_ui()
 
@@ -97,13 +105,13 @@ if __name__ == "__main__":
         st.stop()
     else:
         #Initial resource setup 
-        gen_model, db, cursor, system_behavior = initialise_resources()
+        gen_model, db, cursor = initialise_resources()
 
         # if summary is present, st.session_state['messages'] only has newer messages after the timestamp
-        summary, latest_summary_timestamp = db_funcs.get_latest_summary(cursor, st.session_state['user_info']['email'])
+        summary, latest_summary_timestamp = cached_get_latest_summary(st.session_state['user_info']['email'])
+        st.session_state['latest_summary'] = summary
         if summary:
-            new_messages = db_funcs.get_user_chat_messages(cursor, st.session_state['user_info']['email'], latest_summary_timestamp)
-            st.session_state['latest_summary'] = summary
+            new_messages = cached_get_user_chat_messages(st.session_state['user_info']['email'], latest_summary_timestamp)
             st.session_state['messages'] = new_messages
         # if it's not present, all messages from display_messages are used as messages.
         else:
@@ -117,7 +125,7 @@ if __name__ == "__main__":
         #FUNCTIONING
         # React to user input
         if prompt:= st.chat_input("Type down your query"):
-            st.chat_message("user").markdown(prompt)
+            st.chat_message("user", avatar=st.session_state['user_info']['picture']).markdown(prompt)
             st.session_state['messages'].append({"role":"user", "parts": [prompt]})
             st.session_state['display_messages'].append({"role":"user", "parts": [prompt]})
             db_funcs.save_chat_message(cursor, db, st.session_state['user_info']['email'], "user", prompt)
