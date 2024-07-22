@@ -22,7 +22,7 @@ flow = Flow.from_client_config(
         }
     },
     scopes=['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/calendar'],
-    redirect_uri= st.secrets["google_oauth"]["redirect_uris"][1]
+    redirect_uri= st.secrets["google_oauth"]["redirect_uris"][0]
 )
 
 def google_oauth():
@@ -93,7 +93,7 @@ if __name__ == "__main__":
             else:
                 st.write(f"API key can't be empty")
                 logger.debug(st.session_state['gemini_api_key'])
-                
+
             logger.debug(st.session_state['gemini_api_key'])
         api_key = get_cached_api_key(st.session_state['user_info']['email'])
         st.session_state['gemini_api_key'] = api_key
