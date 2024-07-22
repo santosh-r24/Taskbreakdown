@@ -4,7 +4,17 @@ from logzero import logger
 import streamlit as st
 import database_functions as db_funcs
 
-def initialise_ui():
+
+
+def check_if_user_and_api_keys_are_set():
+    if not st.session_state['user_info'] and st.session_state['gemini_api_key']:
+        st.error("Please login and set your gemini key, before proceeding.") 
+        st.stop()
+    if 'user_info' and 'gemini_api_key' not in st.session_state:
+        st.error("Please login and set your gemini key, before proceeding.") 
+        st.stop()
+        
+def initialise_ui_layout():
     """
     Sets the initial UI display elements.
     """
@@ -12,7 +22,7 @@ def initialise_ui():
     st.markdown(''' :blue-background[Tip: Type your goal along with the timeline you're looking to achieve it. Being Specific helps for a detailed breakdown!] ''')
     st.divider()
 
-def initialise_resources():
+def initialise_setup():
     """
     Initializes resources (gemini model, database, and system behaviour), and loads previous chat history. 
     """
@@ -97,43 +107,37 @@ def summarize_history(messages, model):
     return summary
 
 if __name__ == "__main__":
-    initialise_ui()
+    check_if_user_and_api_keys_are_set()
+    initialise_ui_layout()
+    gen_model, db, cursor = initialise_setup()
 
-    # file_path = Path("audio").mkdir(parents=True, exist_ok=True)
-    if not st.session_state['user_info'] and st.session_state['gemini_api_key']:
-        st.error("Please login and set your gemini key, before proceeding.") 
-        st.stop()
+    # if summary is present, st.session_state['messages'] only has newer messages after the timestamp
+    summary, latest_summary_timestamp = cached_get_latest_summary(st.session_state['user_info']['email'])
+    st.session_state['latest_summary'] = summary
+    if summary:
+        new_messages = cached_get_user_chat_messages(st.session_state['user_info']['email'], latest_summary_timestamp)
+        st.session_state['messages'] = new_messages
+    # if it's not present, all messages from display_messages are used as messages.
     else:
-        #Initial resource setup 
-        gen_model, db, cursor = initialise_resources()
+        st.session_state['messages'] = st.session_state['display_messages']
 
-        # if summary is present, st.session_state['messages'] only has newer messages after the timestamp
-        summary, latest_summary_timestamp = cached_get_latest_summary(st.session_state['user_info']['email'])
-        st.session_state['latest_summary'] = summary
-        if summary:
-            new_messages = cached_get_user_chat_messages(st.session_state['user_info']['email'], latest_summary_timestamp)
-            st.session_state['messages'] = new_messages
-        # if it's not present, all messages from display_messages are used as messages.
-        else:
-            st.session_state['messages'] = st.session_state['display_messages']
-
-        # Displays all chat messages from history on app rerun
-        for message in st.session_state['display_messages']:
-            with st.chat_message(message["role"]):
-                st.markdown(message["parts"][0])
+    # Displays all chat messages from history on app rerun
+    for message in st.session_state['display_messages']:
+        with st.chat_message(message["role"]):
+            st.markdown(message["parts"][0])
+    
+    #FUNCTIONING
+    # React to user input
+    if prompt:= st.chat_input("Type down your query"):
+        st.chat_message("user", avatar=st.session_state['user_info']['picture']).markdown(prompt)
+        st.session_state['messages'].append({"role":"user", "parts": [prompt]})
+        st.session_state['display_messages'].append({"role":"user", "parts": [prompt]})
+        db_funcs.save_chat_message(cursor, db, st.session_state['user_info']['email'], "user", prompt)
         
-        #FUNCTIONING
-        # React to user input
-        if prompt:= st.chat_input("Type down your query"):
-            st.chat_message("user", avatar=st.session_state['user_info']['picture']).markdown(prompt)
-            st.session_state['messages'].append({"role":"user", "parts": [prompt]})
-            st.session_state['display_messages'].append({"role":"user", "parts": [prompt]})
-            db_funcs.save_chat_message(cursor, db, st.session_state['user_info']['email'], "user", prompt)
-            
-            response = generate_response(messages=st.session_state['messages'], model=gen_model, db=db, cursor=cursor)
-            with st.chat_message("assistant"):
-                st.markdown(response.text)
-            # Add assistant response to chat history
-            st.session_state['messages'].append({"role":"model", "parts": [response.text]})
-            st.session_state['display_messages'].append({"role":"model", "parts": [response.text]})
-            db_funcs.save_chat_message(cursor, db, st.session_state['user_info']['email'], "model", response.text)
+        response = generate_response(messages=st.session_state['messages'], model=gen_model, db=db, cursor=cursor)
+        with st.chat_message("assistant"):
+            st.markdown(response.text)
+        # Add assistant response to chat history
+        st.session_state['messages'].append({"role":"model", "parts": [response.text]})
+        st.session_state['display_messages'].append({"role":"model", "parts": [response.text]})
+        db_funcs.save_chat_message(cursor, db, st.session_state['user_info']['email'], "model", response.text)

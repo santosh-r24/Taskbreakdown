@@ -10,12 +10,15 @@ Updates pushed in this commit.
  
 ### Added
 - The model now retrieves previous chats as context. older chats are summarised, while newer chat is used as is for better precision.
+- Toggle button to update Gemini Key
 ### Changed
 - Completely removed obsolete code 
 - Used st.cache to limit the number of database calls (for messages and summary)
 - cleaned the code, by fucntionising. All variables are stored in st.session_state.
-- Updated README.md 
+- Updated README.md
+- The image now is fetched from your google account in user
 ### Fixed
+- Bug fix for updating API key
 
 ## [Unreleased] - 2024-07-16
  
