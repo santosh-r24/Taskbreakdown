@@ -21,7 +21,7 @@ flow = Flow.from_client_config(
             "redirect_uris": st.secrets["google_oauth"]["redirect_uris"]
         }
     },
-    scopes=['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/generative-language'],
+    scopes=['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/calendar'],
     redirect_uri= st.secrets["google_oauth"]["redirect_uris"][0]
 )
 
