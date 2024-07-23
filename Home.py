@@ -105,7 +105,7 @@ if __name__ == "__main__":
             st.write("API Key found and loaded")
             st.write("You can now head onto the Todolist tab, to talk to the assistant :)")
         else: 
-            st.write(f"Your API key is None, please update the API key before you can proceed {st.session_state['gemini_api_key']}.")
+            st.write(f"Your API key is Not set, please update the API key before you can proceed.")
     else:
         user_info = process_callback()
         if user_info:
