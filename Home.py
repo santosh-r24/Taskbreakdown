@@ -39,6 +39,8 @@ def process_callback():
             request = google.auth.transport.requests.Request()
             id_info = google.oauth2.id_token.verify_oauth2_token(
                 credentials._id_token, request, os.environ['GOOGLE_CLIENT_ID'], clock_skew_in_seconds=3)
+            
+            logger.debug(f"credentials is: {credentials.id_token}, client_id: {os.environ['GOOGLE_CLIENT_ID']}")
             st.session_state['credentials'] = credentials_to_dict(credentials)
             return id_info
         except Exception as e:
