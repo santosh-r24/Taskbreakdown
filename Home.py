@@ -90,9 +90,7 @@ if __name__ == "__main__":
         st.write(f"Welcome {st.session_state['user_info']['name']} ")
         
         # logger.debug(st.session_state['gemini_api_key'])
-        api_key = get_cached_api_key(st.session_state['user_info']['email'])
-        st.session_state['gemini_api_key'] = api_key
-        # logger.debug(f"api key = {api_key}")
+        st.session_state['gemini_api_key'] = get_cached_api_key(st.session_state['user_info']['email'])
 
         Update_key = st.toggle(label="Update Gemini key")
         if Update_key:
@@ -102,18 +100,18 @@ if __name__ == "__main__":
                 st.session_state['gemini_api_key'] = api_key_input
                 logger.debug(st.session_state['gemini_api_key'])
                 db_funcs.save_user(cursor, db, st.session_state['user_info']['email'], st.session_state['user_info']['name'], st.session_state['user_info']['picture'], st.session_state['gemini_api_key'])
+                get_cached_api_key.clear()
                 st.write(f"API key saved successfully")
             elif api_key_input== None and submit:
                 st.write(f"API key can't be empty")
                 logger.debug(st.session_state['gemini_api_key'])
 
         if st.session_state['gemini_api_key']:
-            st.session_state['gemini_api_key'] = api_key
             st.write("API Key found and loaded")
             st.write("You can now head onto the Todolist tab, to talk to the assistant :)")
         else: 
             st.write(f"Your API key is Not set, please update the API key before you can proceed.")
-        logger.debug(f"api key = {st.session_state['gemini_api_key']}")
+        logger.debug(f"api key value = {st.session_state['gemini_api_key']}")
     else:
         user_info = process_callback()
         if user_info:
