@@ -117,3 +117,29 @@ def get_latest_summary(cursor, email: str):
     if result:
         return result[0], result[1] 
     return None, None
+
+def delete_chat(cursor, connection, email:str):
+    """
+    Delete chats for a particular user. Returns True if succeeded.
+    """
+    try:
+        cursor.execute('DELETE FROM chat_messages WHERE email = %s', (email,))
+        connection.commit()
+        return True
+    except Exception as e:
+        logger.error(f"Error clearing chat messages for {email}: {e}")
+        connection.rollback()
+        return False
+    
+def delete_summaries(cursor, connection, email:str):
+    """
+    Delete summaries for a particular user. Returns True, if suceeded.
+    """
+    try:
+        cursor.execute('DELETE FROM summaries WHERE email = %s', (email,))
+        connection.commit()
+        return True
+    except Exception as e:
+        logger.error(f"Error clearing summaries for {email}: {e}")
+        connection.rollback()
+        return False

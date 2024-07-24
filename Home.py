@@ -22,7 +22,7 @@ flow = Flow.from_client_config(
         }
     },
     scopes=['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/calendar'],
-    redirect_uri= st.secrets["google_oauth"]["redirect_uris"][0]
+    redirect_uri= st.secrets["google_oauth"]["redirect_uris"][1]
 )
 
 def google_oauth():
@@ -39,11 +39,15 @@ def process_callback():
             request = google.auth.transport.requests.Request()
             id_info = google.oauth2.id_token.verify_oauth2_token(
                 credentials._id_token, request, os.environ['GOOGLE_CLIENT_ID'], clock_skew_in_seconds=3)
+            st.session_state['credentials'] = credentials_to_dict(credentials)
             return id_info
         except Exception as e:
             st.error(f"Error fetching token: {e}")
             return None
     return None
+
+def credentials_to_dict(credentials):
+    return {'token': credentials.token, 'refresh_token': credentials.refresh_token, 'token_uri': credentials.token_uri, 'client_id': credentials.client_id, 'client_secret': credentials.client_secret, 'scopes': credentials.scopes}
 
 def initial_display_elements():
     st.markdown("# Home 📝")
@@ -52,12 +56,12 @@ def initial_display_elements():
     
     st.markdown("""
     ## How to Use This Tool:
-    1. **Sign up as a tester**: Send me a mail to sign up as a tester. After confirmation follow from step 2.  
-    2. **Login with Google**: Use the button below to log in with your Google account.
-    3. (This is a one time step) **Enter Gemini API Key**: After logging in, enter your Gemini API key. If you don't have one, follow these steps to get it:
-    - Go to [Gemini Studio](https://aistudio.google.com/app/apikey) and sign up or log in.
-    - Navigate to the API section in your account settings.
-    - Generate a new API key and copy it.
+    1. **Sign up as a tester**: Send a mail/ contact me on twitter to sign up as a tester. After confirmation follow from step 2.  
+    2. **Login with Google**: Use the "Login with Google" link below to authenticate your Google account.
+    3. (This is a one time step) **Enter Gemini API Key**: Once you're logged in, enter your Gemini API key. If you don't have one, follow these steps to get it:
+    - Go to [Gemini Studio](https://aistudio.google.com/app/apikey) sign up or log in.
+    - Click the Creat API key, and copy it.
+    - Toggle the Update Gemini Key, and paste the key.
     4. **Navigate to the Todolist Tab**: Once your API key is saved, go to the Todolist tab to start using the assistant.
     """)
 
@@ -71,6 +75,7 @@ if __name__ == "__main__":
     db, cursor = db_funcs.initialize_database()
 
     if 'user_info' not in st.session_state:
+        st.session_state['credentials'] = None
         st.session_state['user_info'] = None
         st.session_state['gemini_api_key'] = None
         st.markdown(''' **You're not logged in, please login to use the assistant** ''')

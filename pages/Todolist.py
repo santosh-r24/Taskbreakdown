@@ -1,9 +1,59 @@
 """A LLM powered todolist agent, that breaks down tasks given by user."""
+import datetime
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 import google.generativeai as genai
 from logzero import logger
 import streamlit as st
 import database_functions as db_funcs
 
+# SCOPES = ['https://www.googleapis.com/auth/calendar']
+# def get_calendar_service():
+#     creds = Credentials(
+#         token=st.session_state['credentials']['token'],
+#         refresh_token=st.session_state['credentials']['refresh_token'],
+#         token_uri=st.session_state['credentials']['token_uri'],
+#         client_id=st.secrets['google_oauth']['client_id'],
+#         client_secret=st.secrets['google_oauth']['client_secret'],
+#         scopes=SCOPES
+#     )
+#     try:
+#         service = build('calendar', 'v3', credentials=creds)
+#         return service
+#     except HttpError as error:
+#         st.error(f'An error occurred: {error}')
+#         return None
+
+# def get_user_timezone(service):
+#     try:
+#         settings = service.settings().get(setting='timezone').execute()
+#         return settings['value']
+#     except HttpError as error:
+#         st.error(f'An error occurred: {error}')
+#         return 'UTC'
+
+# def create_event(service, start_date, end_date, summary, description, timezone):
+#     event = {
+#         'summary': summary,
+#         'description': description,
+#         'start': {
+#             'dateTime': start_date.isoformat(),
+#             'timeZone': timezone,
+#         },
+#         'end': {
+#             'dateTime': end_date.isoformat(),
+#             'timeZone': timezone,
+#         },
+#     }
+#     event = service.events().insert(calendarId='primary', body=event).execute()
+#     st.write(f"Event created: {event.get('htmlLink')}")
+
+# def generate_plan(start_date, end_date):
+#     return [
+#         {"date": start_date + datetime.timedelta(days=i), "task": f"Task for day {i+1}"}
+#         for i in range((end_date - start_date).days + 1)
+#     ]
 
 def check_if_user_and_api_keys_are_set():
     if not st.session_state['user_info'] and st.session_state['gemini_api_key']:
@@ -28,14 +78,20 @@ def initialise_setup():
     genai.configure(api_key=st.session_state["gemini_api_key"])
     system_behavior = """ 
                 You are a Smart Assistant designed to break down tasks for users based on the SMART framework for goals. 
-                1. Asses if the user has given a goal and details adhering to the SMART framework.  
-                    a. If yes, then provide detailed, actionable steps first grouped by week, and further broken down by days tailored to each user's input.
-                    b. If not, then ask helping quertions to get additional context to make the goal fit the SMART framework. 
-                2. If a question doesn't fit a task breakdown, return "Sorry, I can't help with this request."  
+                1. Asses if the user has given a goal and supporting details adhering to the SMART framework, along with a start and end date for the goal.  
+                    a. If yes, then provide detailed, actionable steps first grouped by week begininning from start_date to end_date, and further broken down by days tailored to user's input.
+                    b. If not, then ask helping quertions to get additional context to make the goal fit the SMART framework, ask the amount of time the user can spend on the goal, and level of support required.
+                2. If start_date is specified, always start the plan from the specified start_date, not from the beginning of the week. Ensure the plan aligns with the actual days of the week starting from start_date.
+                3. Do not generate a plan unless you have sufficient details about the user and their goal. Do not assume anything about the user, unless specified.
+                4. If a question doesn't fit a task breakdown, return "Sorry, I can't help with this request." 
                 """
-    gen_model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_behavior)
+    generation_config = genai.GenerationConfig(temperature=0.5)
+    gen_model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_behavior, generation_config=generation_config)
     db, cursor = db_funcs.initialize_database()
     
+    #initialising dates to none
+    st.session_state['start_date'] = None
+    st.session_state['end_date'] = None
     #initialising chat history and summary
     if 'display_messages' not in st.session_state:
         st.session_state['display_messages'] = []
@@ -44,10 +100,32 @@ def initialise_setup():
 
     # Load previous chat messages from the database
     if not st.session_state['display_messages']:
-        entire_chat_messages = cached_get_user_chat_messages(st.session_state['user_info']['email'], None)
-        st.session_state['display_messages'] = entire_chat_messages
+        st.session_state['display_messages'] = cached_get_user_chat_messages(st.session_state['user_info']['email'], None)
     
     return gen_model, db, cursor
+
+@st.experimental_dialog("Delete chat", width="small")
+def delete_chat_records(cursor, connection):
+    st.write("All chat records associated will be deleted")
+    st.write(f"Type '**delete chat {st.session_state['user_info']['name']}**' to proceed")
+    delete_check = st.text_input("Enter delete key")
+    if st.button("Submit") and delete_check == f"delete chat {st.session_state['user_info']['name']}":
+        db_funcs.delete_chat(cursor, connection, st.session_state['user_info']['email'])
+        st.session_state['display_messages'] = []
+        st.session_state['messages'] = []
+        cached_get_user_chat_messages.clear()
+        st.rerun()
+
+@st.experimental_dialog("Delete chat", width="small")
+def delete_summary_records(cursor, connection):
+    st.write("All summaries associated will be deleted")
+    st.write(f"Type '**delete summary {st.session_state['user_info']['name']}**' to proceed")
+    delete_check = st.text_input("Enter delete key")
+    if st.button("Submit") and delete_check == f"delete summary {st.session_state['user_info']['name']}":
+        db_funcs.delete_summaries(cursor, connection, st.session_state['user_info']['email'])
+        st.session_state['latest_summary'] = None
+        cached_get_latest_summary.clear()
+        st.rerun()
 
 @st.cache_data
 def cached_get_user_chat_messages(email: str, timestamp=None):
@@ -109,7 +187,23 @@ if __name__ == "__main__":
     check_if_user_and_api_keys_are_set()
     initialise_ui_layout()
     gen_model, db, cursor = initialise_setup()
-
+    with st.sidebar:
+        set_date = st.toggle(label="Set the Timeline")
+        if set_date:
+            with st.container(border=True, height=200):
+                st.session_state['start_date'] = st.date_input("Start date")
+                st.session_state['end_date'] = st.date_input("End date")
+        check_summary = st.toggle("See the Summary so far")
+        if check_summary:
+            if st.session_state['latest_summary']:
+                with st.container(height=400):
+                    st.write(st.session_state['latest_summary'])
+            else:
+                st.write("Summary hasn't been generated so far, continue talking with the agent")
+        if st.button("Reset chat", type="primary"):
+            delete_chat_records(cursor, db)
+        if st.button("Reset summary", type="primary"):
+            delete_summary_records(cursor, db)
     # if summary is present, st.session_state['messages'] only has newer messages after the timestamp
     summary, latest_summary_timestamp = cached_get_latest_summary(st.session_state['user_info']['email'])
     st.session_state['latest_summary'] = summary
@@ -121,14 +215,16 @@ if __name__ == "__main__":
         st.session_state['messages'] = st.session_state['display_messages']
 
     # Displays all chat messages from history on app rerun
+    # with st.container(border=True, height=480):
     for message in st.session_state['display_messages']:
         with st.chat_message(message["role"]):
             st.markdown(message["parts"][0])
     
-    #FUNCTIONING
     # React to user input
     if prompt:= st.chat_input("Type down your query"):
         st.chat_message("user", avatar=st.session_state['user_info']['picture']).markdown(prompt)
+        if st.session_state['start_date'] and st.session_state['end_date']:
+            prompt += f"""\nstart_date:{st.session_state['start_date'].strftime('%Y-%m-%d')}, end_date:{st.session_state['end_date'].strftime('%Y-%m-%d')}"""
         st.session_state['messages'].append({"role":"user", "parts": [prompt]})
         st.session_state['display_messages'].append({"role":"user", "parts": [prompt]})
         db_funcs.save_chat_message(cursor, db, st.session_state['user_info']['email'], "user", prompt)
