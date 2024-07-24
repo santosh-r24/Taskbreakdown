@@ -184,6 +184,7 @@ def summarize_history(messages, model):
     return summary
 
 if __name__ == "__main__":
+    logger.debugf(f"gemini key: {st.session_state['gemini_api_key']}")
     check_if_user_and_api_keys_are_set()
     initialise_ui_layout()
     gen_model, db, cursor = initialise_setup()
