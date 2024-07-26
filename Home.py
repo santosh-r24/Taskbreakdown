@@ -22,7 +22,7 @@ flow = Flow.from_client_config(
         }
     },
     scopes=['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/calendar'],
-    redirect_uri= st.secrets["google_oauth"]["redirect_uris"][0]
+    redirect_uri= st.secrets["google_oauth"]["redirect_uris"][1]
 )
 
 def google_oauth():
@@ -58,7 +58,7 @@ def initial_display_elements():
     
     st.markdown("""
     ## How to Use This Tool:
-    1. **Sign up as a tester**: Send a mail/ contact me on twitter to sign up as a tester. After confirmation follow from step 2.  
+    1. **Sign up as a tester**: Send a mail/ contact me on twitter to sign up as a tester. After confirmation from me follow from step 2.  
     2. **Login with Google**: Use the "Login with Google" link below to authenticate your Google account.
     3. (This is a one time step) **Enter Gemini API Key**: Once you're logged in, enter your Gemini API key. If you don't have one, follow these steps to get it:
     - Go to [Gemini Studio](https://aistudio.google.com/app/apikey) sign up or log in.
@@ -83,7 +83,7 @@ if __name__ == "__main__":
         st.markdown(''' **You're not logged in, please login to use the assistant** ''')
 
     if st.session_state['user_info']:
-        logger.debug(st.session_state['user_info'])
+        # logger.debug(st.session_state['user_info'])
         if not db_funcs.is_user_present(cursor, st.session_state['user_info']['email']):
             db_funcs.save_user(cursor, db, st.session_state['user_info']['email'], st.session_state['user_info']['name'], st.session_state['user_info']['picture'])
     
@@ -98,13 +98,13 @@ if __name__ == "__main__":
             submit = st.button(label="Submit")
             if submit and api_key_input != None:
                 st.session_state['gemini_api_key'] = api_key_input
-                logger.debug(st.session_state['gemini_api_key'])
+                # logger.debug(st.session_state['gemini_api_key'])
                 db_funcs.save_user(cursor, db, st.session_state['user_info']['email'], st.session_state['user_info']['name'], st.session_state['user_info']['picture'], st.session_state['gemini_api_key'])
                 get_cached_api_key.clear()
                 st.write(f"API key saved successfully")
             elif api_key_input== None and submit:
                 st.write(f"API key can't be empty")
-                logger.debug(st.session_state['gemini_api_key'])
+                # logger.debug(st.session_state['gemini_api_key'])
 
         if st.session_state['gemini_api_key']:
             st.write("API Key found and loaded")
