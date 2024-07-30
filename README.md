@@ -7,26 +7,20 @@ This is a PoC for a todolist agent, which breaks down big goals into smaller tas
 2. Uses Gemini Flash 1.5 to answer the prompt(if it adheres to the SMART framework).
 3. Uses postgres as database to store chat 
 4. Uses streamlit as an interface. 
-5. Older chats are summarised, model has exact past 5 chat context 
+5. Older chats are summarised, model has exact past 5 chat context.
+6. Plans can be synced to calendar. 
 
-### Usage
-streamlit run Todolist.py
+#### Instructions
 
-### Example prompts
-2. I want to run a 10K in 1hour, currently I run a 10K in 70mins. Give me a breakdown on training regimen, i have 1 month to my race
-
-#### Challenges I'm currently facing
-
-Date - 2024/07/06
-Have to think about unique features to stand out from usual chatgpt. 
-1. Currently planning to integrate google calendar - Yet to implement 
-2. Introduce a voice assistant, that will motivate you as you finish goals. - Yet to implement
-
-Date - 2024/06/17 
-I wanted to incorporate a light weight ASR model, using distilled version of whisper to transcribe audio to text. Then, send this text as an input to gemini. Realised this way i can do additional NLP preprocessing to the text instead of directly feeding the input to the model. 
-1. I have a 1050Ti GPU and running this on windows, hugging face transformers library has issues with windows support (FlashAttention2)
-2. I tried running this on Colab, but the model seems to not transcribe this properly. Either the text hallucinates or i don't get any text response. I'll have to come back to this and check 
-
-Date - 2024/06/23
-1. Tried using langchain framework for this, turns out to be pretty complicated to build agents with gemini. Got lots of bugs. 
-2. Came across this [article](https://www.octomind.dev/blog/why-we-no-longer-use-langchain-for-building-our-ai-agents) to get me going without langchaing 
+1. The Agent follows the [SMART framework](https://www.atlassian.com/blog/productivity/how-to-write-smart-goals) to help define goals.
+2.  Being specific and giving supporting details will help to curate a personalised plan.
+3. Set Timeline dates, and schedule time to help create a more accurate timeline. 
+4. Timelines **must** be set in order to generate plans, and to sync to calendar. 
+5. The agent generates a summary of older messages every so often (after every 5000 Tokens), and preserves newer messages for precise context.
+6. You can see if a summary has been generated, by toggling the summary button.
+7. If a summary hasn't been generated, the agent uses all previous messages as context. 
+8. Currently the summary can't be edited.
+9. Currently, the agent doesn't store plans generated, or synced to calendar. 
+10. The agent only *remembers* the latest summary (if present) and the messages post it.
+11. Delete chat in the side bar can be used to delete all chat interactions with the agent.
+12. Delete summary in the side bar, deletes all summaries.

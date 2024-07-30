@@ -4,7 +4,8 @@ import google.auth.transport.requests
 import google.oauth2.id_token
 import os 
 from logzero import logger
-import database_functions as db_funcs
+
+import ToDoListAgent.helper.database_functions as db_funcs
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 os.environ['GOOGLE_CLIENT_ID'] = st.secrets['google_oauth']['client_id']
@@ -28,7 +29,15 @@ flow = Flow.from_client_config(
 def google_oauth():
     authorization_url, state = flow.authorization_url(prompt='consent')
     st.session_state['state'] = state
-    st.write(f"[Login with Google]({authorization_url})")
+    st.write(f'''
+    <a target="_self" href="{authorization_url}">
+        <button>
+            Login with Google
+        </button>
+    </a>
+    ''',
+    unsafe_allow_html=True
+)
 
 def process_callback():
     if 'code' in st.query_params.keys():
@@ -39,8 +48,6 @@ def process_callback():
             request = google.auth.transport.requests.Request()
             id_info = google.oauth2.id_token.verify_oauth2_token(
                 credentials._id_token, request, os.environ['GOOGLE_CLIENT_ID'], clock_skew_in_seconds=3)
-            
-            logger.debug(f"credentials is: {credentials.id_token}, client_id: {os.environ['GOOGLE_CLIENT_ID']}")
             st.session_state['credentials'] = credentials_to_dict(credentials)
             return id_info
         except Exception as e:
@@ -52,19 +59,23 @@ def credentials_to_dict(credentials):
     return {'token': credentials.token, 'refresh_token': credentials.refresh_token, 'token_uri': credentials.token_uri, 'client_id': credentials.client_id, 'client_secret': credentials.client_secret, 'scopes': credentials.scopes}
 
 def initial_display_elements():
-    st.markdown("# Home 📝")
-    st.sidebar.markdown("# Home 📝")
-    st.subheader("Welcome! This is a smart assistant to help break down your big seemingly complex tasks, into smaller steps that makes it easier to build on each day!")
+    st.header("TaskBreakdown 📝", divider='rainbow')
+    # st.sidebar.markdown("# Home 📝")
+    st.subheader("This is a smart assistant to help break down your big seemingly complex tasks, into smaller steps that makes it easier to build on each day!")
     
     st.markdown("""
-    ## How to Use This Tool:
-    1. **Sign up as a tester**: Send a mail/ contact me on twitter to sign up as a tester. After confirmation from me follow from step 2.  
-    2. **Login with Google**: Use the "Login with Google" link below to authenticate your Google account.
-    3. (This is a one time step) **Enter Gemini API Key**: Once you're logged in, enter your Gemini API key. If you don't have one, follow these steps to get it:
-    - Go to [Gemini Studio](https://aistudio.google.com/app/apikey) sign up or log in.
-    - Click the Creat API key, and copy it.
-    - Toggle the Update Gemini Key, and paste the key.
-    4. **Navigate to the Todolist Tab**: Once your API key is saved, go to the Todolist tab to start using the assistant.
+    ## How to Begin:
+    1. **Sign up as a tester**: Send a mail or contact me on Twitter to sign up as a tester. After confirmation from me, follow from step 2.
+    2. **Login with Google**: Use the "Login with Google" button below to authenticate your Google account with all the necessary permissions.
+    
+        ### One-Time Step:
+        **Enter Gemini API Key**: Once you're logged in, enter your Gemini API key. If you don't have one, follow these steps to get it:
+        - Go to [Gemini Studio](https://aistudio.google.com/app/apikey) and sign up or log in.
+        - Click the "Create API key" button and copy the key.
+        - Toggle the "Update Gemini Key" button, paste the key, and hit "Submit".
+        - Wait for the key to be loaded.
+
+    3. **Navigate to the Todolist Tab**: Once your API key is saved, go to the Todolist tab to start using the assistant.
     """)
 
 @st.cache_data(show_spinner=False)
@@ -80,7 +91,7 @@ if __name__ == "__main__":
         st.session_state['credentials'] = None
         st.session_state['user_info'] = None
         st.session_state['gemini_api_key'] = None
-        st.markdown(''' **You're not logged in, please login to use the assistant** ''')
+        st.warning(body="You're not logged in, please login to use the assistant")
 
     if st.session_state['user_info']:
         # logger.debug(st.session_state['user_info'])
@@ -101,22 +112,22 @@ if __name__ == "__main__":
                 # logger.debug(st.session_state['gemini_api_key'])
                 db_funcs.save_user(cursor, db, st.session_state['user_info']['email'], st.session_state['user_info']['name'], st.session_state['user_info']['picture'], st.session_state['gemini_api_key'])
                 get_cached_api_key.clear()
-                st.write(f"API key saved successfully")
+                st.success(f"API key saved successfully")
             elif api_key_input== None and submit:
-                st.write(f"API key can't be empty")
+                st.error(f"API key can't be empty")
                 # logger.debug(st.session_state['gemini_api_key'])
 
         if st.session_state['gemini_api_key']:
-            st.write("API Key found and loaded")
-            st.write("You can now head onto the Todolist tab, to talk to the assistant :)")
+            st.success(body="API Key found and loaded")
+            st.info("You can now head onto the Todolist tab, to talk to the assistant :)")
         else: 
-            st.write(f"Your API key is Not set, please update the API key before you can proceed.")
-        logger.debug(f"api key value = {st.session_state['gemini_api_key']}")
+            st.warning(f"Your API key is Not set, please update the API key before you can proceed.")
+        # logger.debug(f"api key value = {st.session_state['gemini_api_key']}")
     else:
         user_info = process_callback()
         if user_info:
             st.session_state['user_info'] = user_info
-            st.write(f"You've logged in as {user_info['name']}")
+            st.info(f"You've logged in as {user_info['name']}")
             st.rerun()
         else:
             google_oauth()

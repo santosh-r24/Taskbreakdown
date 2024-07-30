@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.0.0] - 2024-07-30
+ 
+Updates pushed in this commit.
+ 
+### Added
+- Now the agent can generate and sync plans to google calander.
+- Added a tab in Todolist page to schedule time.
+- Added another model for json responses for calander. 
+- Added st.spinner to show that the agent is responding.
+- Added instructions popover in Todolist Tab.
+### Changed
+- Refactored the code further. llm function calls, calendar, and helper utils are abstracted from main streamlit code.
+- There's a separate tab to see the plan generated so far, which would be sent to calendar.
+- Added appropriate streamlit status messages instead of st write.  
+- Added login button instead of login url.
+- Changed the How to use Tool function in the markdown in Home page.
+- Changed the order the tabs appear on sidebar.
+- Changed st.experimental_dialog to st.dialog decorator.
+- Moved database_functions along with utils, llm_utils inside helpers.
+- Modified .gitignore file.
+### Fixed
+
 ## [Unreleased] - 2024-07-22
  
 Updates pushed in this commit.
