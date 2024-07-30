@@ -5,7 +5,7 @@ import google.oauth2.id_token
 import os 
 from logzero import logger
 
-import ToDoListAgent.helper.database_functions as db_funcs
+import helper.database_functions as db_funcs
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 os.environ['GOOGLE_CLIENT_ID'] = st.secrets['google_oauth']['client_id']
