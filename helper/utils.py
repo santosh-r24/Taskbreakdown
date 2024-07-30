@@ -5,7 +5,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from logzero import logger
 
-import ToDoListAgent.helper.database_functions as db_funcs
+import helper.database_functions as db_funcs
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 def initialize_variables():

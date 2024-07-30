@@ -3,9 +3,9 @@ import streamlit as st
 from logzero import logger
 import datetime
 
-import ToDoListAgent.helper.llm_utils as llm_utils
-import ToDoListAgent.helper.utils as utils
-import ToDoListAgent.helper.database_functions as db_funcs
+import helper.llm_utils as llm_utils
+import helper.utils as utils
+import helper.database_functions as db_funcs
     
 if __name__ == "__main__":
     db, cursor = db_funcs.initialize_database()

@@ -6,8 +6,8 @@ import streamlit as st
 import google.generativeai as genai
 from logzero import logger
 
-import ToDoListAgent.helper.database_functions as db_funcs
-import ToDoListAgent.helper.utils as utils
+import helper.database_functions as db_funcs
+import helper.utils as utils
 
 
 def initialise_model_setup():

@@ -3,9 +3,9 @@ from logzero import logger
 import streamlit as st
 import datetime
 
-import ToDoListAgent.helper.utils as utils
-import ToDoListAgent.helper.llm_utils as llm_utils
-import ToDoListAgent.helper.database_functions as db_funcs
+import helper.utils as utils
+import helper.llm_utils as llm_utils
+import helper.database_functions as db_funcs
 
 if 'initialized' not in st.session_state:
     st.session_state['initialized'] = False
