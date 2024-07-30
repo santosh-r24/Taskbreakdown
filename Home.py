@@ -29,15 +29,16 @@ flow = Flow.from_client_config(
 def google_oauth():
     authorization_url, state = flow.authorization_url(prompt='consent')
     st.session_state['state'] = state
-    st.write(f'''
-    <a target="_self" href="{authorization_url}">
-        <button>
-            Login with Google
-        </button>
-    </a>
-    ''',
-    unsafe_allow_html=True
-)
+    st.write(f"[Login with Google]({authorization_url})")
+#     st.write(f'''
+#     <a target="_self" href="{authorization_url}">
+#         <button>
+#             Login with Google
+#         </button>
+#     </a>
+#     ''',
+#     unsafe_allow_html=True
+# )
 
 def process_callback():
     if 'code' in st.query_params.keys():
@@ -66,7 +67,7 @@ def initial_display_elements():
     st.markdown("""
     ## How to Begin:
     1. **Sign up as a tester**: Send a mail or contact me on Twitter to sign up as a tester. After confirmation from me, follow from step 2.
-    2. **Login with Google**: Use the "Login with Google" button below to authenticate your Google account with all the necessary permissions.
+    2. **Login with Google**: Use the "Login with Google" link below to authenticate your Google account with all the necessary permissions.
     
         ### One-Time Step:
         **Enter Gemini API Key**: Once you're logged in, enter your Gemini API key. If you don't have one, follow these steps to get it:

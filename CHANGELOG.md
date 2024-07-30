@@ -18,13 +18,15 @@ Updates pushed in this commit.
 - Refactored the code further. llm function calls, calendar, and helper utils are abstracted from main streamlit code.
 - There's a separate tab to see the plan generated so far, which would be sent to calendar.
 - Added appropriate streamlit status messages instead of st write.  
-- Added login button instead of login url.
 - Changed the How to use Tool function in the markdown in Home page.
 - Changed the order the tabs appear on sidebar.
 - Changed st.experimental_dialog to st.dialog decorator.
 - Moved database_functions along with utils, llm_utils inside helpers.
 - Modified .gitignore file.
 ### Fixed
+- Added init file in helper directory 
+### Removed
+- Added login button instead of login url.
 
 ## [Unreleased] - 2024-07-22
  
