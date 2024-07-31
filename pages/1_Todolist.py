@@ -44,9 +44,9 @@ def initialise_side_bar_components():
 
 if __name__ == "__main__":
     # Run initialization only if not already initialized
+    utils.check_if_user_and_api_keys_are_set()
     if not st.session_state['initialized']:
         utils.initialize_variables()
-    utils.check_if_user_and_api_keys_are_set()
     utils.initialise_ui_layout_todolist_page()
     db, cursor = db_funcs.initialize_database()
     llm_utils.initialise_model_setup()
