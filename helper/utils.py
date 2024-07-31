@@ -85,6 +85,8 @@ def initialise_ui_layout_todolist_page():
                     13. :blue-background[Delete chat] in the side bar can be used to delete all chat interactions with the assistant, and clear the context of the assistant.
                     14. :blue-background[Delete summary] in the side bar, deletes all summaries.
                     15. If you want to create a new unrelated plan, delete chat and start afresh.
+
+                    NOTE: Currently only 10 messages can be sent to the assistant in an hour, messages are refreshed after every hour. 
                     ''')
     st.divider()
 

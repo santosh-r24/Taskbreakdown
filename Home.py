@@ -59,7 +59,7 @@ def initial_display_elements():
     ## How to Begin:
     1. **Sign up as a tester**: Send a mail or contact me on Twitter to sign up as a tester. After confirmation from me, proceed with step 2.
     2. **Login with Google**: Use the "Login with Google" link below to authenticate your Google account with all the necessary permissions. Wait for the setup to be ready.
-    3. **Navigate to the Todolist Tab**: Go to the Todolist tab and read the instructions tab to start help with using the assistant.
+    3. **Navigate to the Todolist Tab**: Go to the Todolist tab and read the instructions pop down to get help with using the assistant.
     """)
 
 @st.cache_data(show_spinner=False)
