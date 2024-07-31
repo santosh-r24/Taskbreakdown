@@ -23,7 +23,7 @@ flow = Flow.from_client_config(
         }
     },
     scopes=['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/calendar'],
-    redirect_uri= st.secrets["google_oauth"]["redirect_uris"][1]
+    redirect_uri= st.secrets["google_oauth"]["redirect_uris"][0]
 )
 
 def google_oauth():
