@@ -6,6 +6,7 @@ from logzero import logger
 import base64
 import binascii
 import cryptography
+import datetime
 
 def load_key():
     fernet_key_str = st.secrets["encryption_key"]
@@ -79,6 +80,24 @@ def get_user_api_key(cursor, email: str):
     logger.debug(f"No API key found for {email}")
     return None
 
+def get_message_count_within_timeframe(cursor, email, timeframe):
+    """
+    cursor: 
+    email: 
+    timeframe: duration till which rate_limit will apply to cap messages. This is set to 1 hour by default.
+    
+    returns
+    message_count: integer value of how many messages have been sent by user in the past 1 hour.
+    """
+    current_time = datetime.datetime.now(datetime.timezone.utc)
+    timeframe_start = current_time - timeframe
+    cursor.execute(
+        "SELECT COUNT(*) FROM chat_messages WHERE email = %s AND timestamp >= %s AND role = 'user'",
+        (email, timeframe_start)
+    )
+    message_count = cursor.fetchone()[0]
+    return message_count
+
 def save_chat_message(cursor, connection, email: str, role: str, content: str):
     parts = json.dumps([content])
     cursor.execute('INSERT INTO chat_messages (email, role, parts) VALUES (%s, %s, %s)', (email, role, parts))
@@ -115,7 +134,9 @@ def get_latest_summary(cursor, email: str):
     cursor.execute('SELECT summary, timestamp FROM summaries WHERE email=%s', (email,))
     result = cursor.fetchone()
     if result:
+        logger.debug(f"get_latest_summary found: {result}")
         return result[0], result[1] 
+    logger.debug(f"No summary found")
     return None, None
 
 def delete_chat(cursor, connection, email:str):

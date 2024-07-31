@@ -15,7 +15,7 @@ if __name__ == "__main__":
     st.session_state['end_time']]):
         st.warning(icon="🚨", body="Ensure Timelines are set, and times are scheduled in the Todolist Tab")
         st.stop()
-    st.info("Click Generate plan, to see the structure of the plan.")
+    st.info("Click Generate plan, to view the structure of the plan.")
     st.info("Click Send to Calander, for the plan to be synced to calander.")
     if st.button("Generate plan"):
         prompt = f"Using the previous messages as context. Generate a detailed plan starting from date {st.session_state['start_date']} to {st.session_state['end_date']} scheduled each day from start_time {st.session_state['start_time']} to {st.session_state['end_time']}"

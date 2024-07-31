@@ -23,7 +23,8 @@ def initialise_model_setup():
                 2. If start_date is specified, always start the plan from the specified start_date, not from the beginning of the week. Ensure the plan aligns with the actual days of the week starting from start_date.
                 3. If start_time and end_time is specified, then that is the time the user can allocate each day for the task. Ensure the plan aligns with the time duration specified.
                 4. Do not generate a plan unless you have sufficient details about the user and their goal. Do not assume anything about the user, unless specified.
-                5. If a question doesn't fit a task breakdown, return "Sorry, I can't help with this request."
+                5. If the user asks for summary to be generated for the following conversation. Provide the summary.
+                5. If a question doesn't fit a task breakdown or a summary of the following conversation, return "Sorry, I can't help with this request."
                 """
     
     json_system_behavior = """
@@ -62,7 +63,7 @@ def parse_plan_response(response_text:str):
         logger.error("Failed to decode the response. Please try again.", exc_info=True)
         return []
     
-def generate_response(messages:list, model:genai.GenerativeModel, max_tokens = 4000, db=None, cursor=None):
+def generate_response(messages:list, model:genai.GenerativeModel, max_tokens = 5000, db=None, cursor=None):
     """
     Uses gemini api to generate a response based on input. 
     args:

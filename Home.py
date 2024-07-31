@@ -23,22 +23,13 @@ flow = Flow.from_client_config(
         }
     },
     scopes=['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/calendar'],
-    redirect_uri= st.secrets["google_oauth"]["redirect_uris"][0]
+    redirect_uri= st.secrets["google_oauth"]["redirect_uris"][1]
 )
 
 def google_oauth():
     authorization_url, state = flow.authorization_url(prompt='consent')
     st.session_state['state'] = state
     st.write(f"[Login with Google]({authorization_url})")
-#     st.write(f'''
-#     <a target="_self" href="{authorization_url}">
-#         <button>
-#             Login with Google
-#         </button>
-#     </a>
-#     ''',
-#     unsafe_allow_html=True
-# )
 
 def process_callback():
     if 'code' in st.query_params.keys():
@@ -66,17 +57,9 @@ def initial_display_elements():
     
     st.markdown("""
     ## How to Begin:
-    1. **Sign up as a tester**: Send a mail or contact me on Twitter to sign up as a tester. After confirmation from me, follow from step 2.
-    2. **Login with Google**: Use the "Login with Google" link below to authenticate your Google account with all the necessary permissions.
-    
-        ### One-Time Step:
-        **Enter Gemini API Key**: Once you're logged in, enter your Gemini API key. If you don't have one, follow these steps to get it:
-        - Go to [Gemini Studio](https://aistudio.google.com/app/apikey) and sign up or log in.
-        - Click the "Create API key" button and copy the key.
-        - Toggle the "Update Gemini Key" button, paste the key, and hit "Submit".
-        - Wait for the key to be loaded.
-
-    3. **Navigate to the Todolist Tab**: Once your API key is saved, go to the Todolist tab to start using the assistant.
+    1. **Sign up as a tester**: Send a mail or contact me on Twitter to sign up as a tester. After confirmation from me, proceed with step 2.
+    2. **Login with Google**: Use the "Login with Google" link below to authenticate your Google account with all the necessary permissions. Wait for the setup to be ready.
+    3. **Navigate to the Todolist Tab**: Go to the Todolist tab and read the instructions tab to start help with using the assistant.
     """)
 
 @st.cache_data(show_spinner=False)
@@ -99,30 +82,31 @@ if __name__ == "__main__":
         if not db_funcs.is_user_present(cursor, st.session_state['user_info']['email']):
             db_funcs.save_user(cursor, db, st.session_state['user_info']['email'], st.session_state['user_info']['name'], st.session_state['user_info']['picture'])
     
-        st.write(f"Welcome {st.session_state['user_info']['name']} ")
-        
+        st.info(f"Welcome {st.session_state['user_info']['name']} ")
+        st.success("Setup Ready! You can now head onto the Todolist tab, to talk to the assistant :)")
+        logger.info(f"Welcome {st.session_state['user_info']['name']} ")
         # logger.debug(st.session_state['gemini_api_key'])
-        st.session_state['gemini_api_key'] = get_cached_api_key(st.session_state['user_info']['email'])
+        # st.session_state['gemini_api_key'] = get_cached_api_key(st.session_state['user_info']['email'])
 
-        Update_key = st.toggle(label="Update Gemini key")
-        if Update_key:
-            api_key_input = st.text_input("Enter your Gemini API Key", type="password")
-            submit = st.button(label="Submit")
-            if submit and api_key_input != None:
-                st.session_state['gemini_api_key'] = api_key_input
-                # logger.debug(st.session_state['gemini_api_key'])
-                db_funcs.save_user(cursor, db, st.session_state['user_info']['email'], st.session_state['user_info']['name'], st.session_state['user_info']['picture'], st.session_state['gemini_api_key'])
-                get_cached_api_key.clear()
-                st.success(f"API key saved successfully")
-            elif api_key_input== None and submit:
-                st.error(f"API key can't be empty")
-                # logger.debug(st.session_state['gemini_api_key'])
+        # Update_key = st.toggle(label="Update Gemini key")
+        # if Update_key:
+        #     api_key_input = st.text_input("Enter your Gemini API Key", type="password")
+        #     submit = st.button(label="Submit")
+        #     if submit and api_key_input != None:
+        #         st.session_state['gemini_api_key'] = api_key_input
+        #         # logger.debug(st.session_state['gemini_api_key'])
+        #         db_funcs.save_user(cursor, db, st.session_state['user_info']['email'], st.session_state['user_info']['name'], st.session_state['user_info']['picture'], st.session_state['gemini_api_key'])
+        #         get_cached_api_key.clear()
+        #         st.success(f"API key saved successfully")
+        #     elif api_key_input== None and submit:
+        #         st.error(f"API key can't be empty")
+        #         # logger.debug(st.session_state['gemini_api_key'])
 
-        if st.session_state['gemini_api_key']:
-            st.success(body="API Key found and loaded")
-            st.info("You can now head onto the Todolist tab, to talk to the assistant :)")
-        else: 
-            st.warning(f"Your API key is Not set, please update the API key before you can proceed.")
+        # if st.session_state['gemini_api_key']:
+        #     st.success(body="API Key found and loaded")
+        #     logger.info(f"API key is loaded for {st.session_state['user_info']['name']}")
+        # else: 
+        #     st.warning(f"Your API key is Not set, please update the API key before you can proceed.")
         # logger.debug(f"api key value = {st.session_state['gemini_api_key']}")
     else:
         user_info = process_callback()

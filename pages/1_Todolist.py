@@ -54,6 +54,7 @@ if __name__ == "__main__":
 
     if 'messages_loaded' not in st.session_state:
         with st.spinner("Fetching previous messages"):
+            logger.info("Summary is being fetched")
             summary, latest_summary_timestamp = utils.cached_get_latest_summary(st.session_state['user_info']['email'])
             st.session_state['latest_summary'] = summary
             if summary:
@@ -62,7 +63,7 @@ if __name__ == "__main__":
             else:
                 st.session_state['messages'] = st.session_state['display_messages']
             st.session_state['messages_loaded'] = True
-
+            logger.info(f"Messages are initialised for {st.session_state['user_info']['email']}")
     # Displays all chat messages from history on app rerun
     for message in st.session_state['display_messages']:
         with st.chat_message(message["role"]):
@@ -70,22 +71,27 @@ if __name__ == "__main__":
     
     # React to user input
     if prompt:= st.chat_input("Type down your query"):
-        st.chat_message("user", avatar=st.session_state['user_info']['picture']).markdown(prompt)
-        if st.session_state['start_date'] and st.session_state['end_date']:
-            prompt += f"""\tstart_date:{st.session_state['start_date'].strftime('%Y-%m-%d')}, end_date:{st.session_state['end_date'].strftime('%Y-%m-%d')}
-                        """
-        if st.session_state['start_time'] and st.session_state['end_time']:
-            prompt += f"""\tstart_time:{st.session_state['start_time'].strftime('%H-%S-%S')}, end_time:{st.session_state['end_time'].strftime('%H-%S-%S')}"""
-        # logger.debug(f"Appending user message: {prompt}")
-        st.session_state['messages'].append({"role":"user", "parts": [prompt]})
-        st.session_state['display_messages'].append({"role":"user", "parts": [prompt]})
-        db_funcs.save_chat_message(cursor, db, st.session_state['user_info']['email'], "user", prompt)
-        with st.spinner("Generating response... please wait"):
-            response = llm_utils.generate_response(messages=st.session_state['messages'], model=st.session_state['chat_model'], db=db, cursor=cursor)
+        message_count = utils.cached_get_message_count(st.session_state['user_info']['email'], datetime.timedelta(minutes=st.session_state['timeframe']))
+        logger.debug(f"User{st.session_state['user_info']['name']} reached {message_count} messages")
+        if message_count <= st.session_state['rate_limit']:
+            st.chat_message("user", avatar=st.session_state['user_info']['picture']).markdown(prompt)
+            if st.session_state['start_date'] and st.session_state['end_date']:
+                prompt += f"""\tstart_date:{st.session_state['start_date'].strftime('%Y-%m-%d')}, end_date:{st.session_state['end_date'].strftime('%Y-%m-%d')}
+                            """
+            if st.session_state['start_time'] and st.session_state['end_time']:
+                prompt += f"""\tstart_time:{st.session_state['start_time'].strftime('%H-%M-%S')}, end_time:{st.session_state['end_time'].strftime('%H-%M-%S')}"""
+            # logger.debug(f"Appending user message: {prompt}")
+            st.session_state['messages'].append({"role":"user", "parts": [prompt]})
+            st.session_state['display_messages'].append({"role":"user", "parts": [prompt]})
+            db_funcs.save_chat_message(cursor, db, st.session_state['user_info']['email'], "user", prompt)
+            with st.spinner("Generating response... please wait"):
+                response = llm_utils.generate_response(messages=st.session_state['messages'], model=st.session_state['chat_model'], db=db, cursor=cursor)
 
-        with st.chat_message("assistant"):
-            st.markdown(response.text)
-        # Add assistant response to chat history
-        st.session_state['messages'].append({"role":"model", "parts": [response.text]})
-        st.session_state['display_messages'].append({"role":"model", "parts": [response.text]})
-        db_funcs.save_chat_message(cursor, db, st.session_state['user_info']['email'], "model", response.text)
+            with st.chat_message("assistant"):
+                st.markdown(response.text)
+            # Add assistant response to chat history
+            st.session_state['messages'].append({"role":"model", "parts": [response.text]})
+            st.session_state['display_messages'].append({"role":"model", "parts": [response.text]})
+            db_funcs.save_chat_message(cursor, db, st.session_state['user_info']['email'], "model", response.text)
+        else: 
+            st.warning("Rate limit exceeded. Please try again later.")
