@@ -72,7 +72,7 @@ if __name__ == "__main__":
     # React to user input
     if prompt:= st.chat_input("Type down your query"):
         message_count = utils.cached_get_message_count(st.session_state['user_info']['email'], datetime.timedelta(minutes=st.session_state['timeframe']))
-        logger.debug(f"User{st.session_state['user_info']['name']} reached {message_count} messages")
+        logger.debug(f"User {st.session_state['user_info']['name']} reached {message_count} messages")
         if message_count <= st.session_state['rate_limit']:
             st.chat_message("user", avatar=st.session_state['user_info']['picture']).markdown(prompt)
             if st.session_state['start_date'] and st.session_state['end_date']:
