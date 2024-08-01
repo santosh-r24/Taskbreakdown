@@ -23,8 +23,7 @@ def initialise_model_setup():
                 2. If start_date is specified, always start the plan from the specified start_date, not from the beginning of the week. Ensure the plan aligns with the actual days of the week starting from start_date.
                 3. If start_time and end_time is specified, then that is the time the user can allocate each day for the task. Ensure the plan aligns with the time duration specified.
                 4. Do not generate a plan unless you have sufficient details about the user and their goal. Do not assume anything about the user, unless specified.
-                5. If the user asks for summary to be generated for the following conversation. Provide the summary.
-                5. If a question doesn't fit a task breakdown or a summary of the following conversation, return "Sorry, I can't help with this request."
+                5. If a question is irrelevant to SMART framework and task breakdowns, return "Sorry, I can't help with this request."
                 """
     
     json_system_behavior = """
@@ -37,9 +36,18 @@ def initialise_model_setup():
                 6. When generating a plan, provide the output in the following JSON format:
                    {"plan": [{"date": "YYYY-MM-DD", "task": "Detailed Task description", "goal": "Goal description", "start_time":"start time duration", "end_time": "end time duration"}, ...]}
                 """
-    generation_config = genai.GenerationConfig(temperature=0.5)
+    
+    summary_behavior = """
+                You're a smart assistant that provides a summary of the conversation between the user, and model. 
+                1. Provide summary, while keeping the contextual details, and quantitaive details in place. 
+                2. Try to provide a summary under 500 words. Try not exceeding the limit.  
+                """
+    generation_config_summary = genai.GenerationConfig(temperature=0.25)
+    generation_config_assistant = genai.GenerationConfig(temperature=0.5)
     generation_config_json = genai.GenerationConfig(temperature=0.3, response_mime_type="application/json")
-    st.session_state['chat_model'] = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_behavior, generation_config=generation_config)
+
+    st.session_state['summary_model'] = genai.GenerativeModel('gemini-1.5-flash', system_instruction=summary_behavior, generation_config=generation_config_summary)
+    st.session_state['chat_model'] = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_behavior, generation_config=generation_config_assistant)
     st.session_state['plan_model']  = genai.GenerativeModel('gemini-1.5-flash', system_instruction=json_system_behavior, generation_config=generation_config_json)
 
 def generate_plan_response(prompt:str, model:genai.GenerativeModel, db=None, cursor=None):
@@ -50,7 +58,6 @@ def generate_plan_response(prompt:str, model:genai.GenerativeModel, db=None, cur
         st.error("No response generated. Please try again.")
         return None
     response_text = response.candidates[0].content.parts[0].text
-    # logger.debug(f"Response after mime is set: {response_text}")
     return response_text
 
 def parse_plan_response(response_text:str):
@@ -58,7 +65,6 @@ def parse_plan_response(response_text:str):
         response_json = json.loads(response_text)
         return response_json.get("plan", [])
     except json.JSONDecodeError as e:
-        # logger.debug(response_text)
         st.error("Failed to decode the response. Please try again.")
         logger.error("Failed to decode the response. Please try again.", exc_info=True)
         return []
@@ -79,28 +85,26 @@ def generate_response(messages:list, model:genai.GenerativeModel, max_tokens = 5
             messages = [{"role": "model", "parts": summary}] + messages
     else:
         logger.debug("Summarizing older messages to reduce token count.")
-        st.info("New Summary is being generated...")
-        summary = summarize_history(messages[-15:-5], model)
+        with st.spinner("New Summary is being generated..."):
+            summary = summarize_history(messages[-15:-5])
         timestamp = datetime.datetime.now()
         db_funcs.save_summary(cursor, db, st.session_state['user_info']['email'], summary, timestamp)
         utils.cached_get_latest_summary.clear()
         st.session_state['latest_summary'] = summary
         messages = [{"role": "model", "parts": [summary]}] + messages[-5:]
-        # when new summary is generated, st.session_state['messages'] contain only the 5 most recent messages
         st.session_state['messages'] = messages[-5:]
-    # logger.debug(f"\n messages are: {messages}")
     response = model.generate_content(messages)
     return response
 
-def summarize_history(messages:list, model:genai.GenerativeModel):
+def summarize_history(messages:list):
     """
     Summarizes the given messages to reduce token count, while maintaining context.
 
     args:
     messages: List of message objects to summarize
-    model: Generative Model used for summarizing. default = 'gemini-1.5-flash'
     """
-    summary_prompt = "Summarize the following conversation in under 500 words, try to maintain exact specific details :\n"
+    model = st.session_state['summary_model']
+    summary_prompt = "Summarize the following conversation, while maintaing qunatitative specific details :\n"
     for message in messages:
         if message["role"] == "user":
             summary_prompt += f"user: {message['parts'][0]}\n"
