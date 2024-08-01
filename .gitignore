@@ -2,3 +2,5 @@ audio/
 config.py
 user_data.db
 media/
+.streamlit
+__pycache__

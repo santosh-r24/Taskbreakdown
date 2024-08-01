@@ -4,6 +4,71 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.0] - 2024-07-30
+ 
+Updates pushed in this commit.
+ 
+### Added
+- User login check in calendar page
+- 1 out of 5 API keys would be used randomly 
+### Changed
+- User doesn't have to provide API key for using the tool now. 
+- Error check message when user enters without logging in 
+### Fixed
+- API 400 error when talking to the assistant
+### Removed
+- Removed User entering API keya
+
+## [1.0.0] - 2024-07-30
+ 
+Updates pushed in this commit.
+ 
+### Added
+- Now the agent can generate and sync plans to google calander.
+- Added a tab in Todolist page to schedule time.
+- Added another model for json responses for calander. 
+- Added st.spinner to show that the agent is responding.
+- Added instructions popover in Todolist Tab.
+### Changed
+- Refactored the code further. llm function calls, calendar, and helper utils are abstracted from main streamlit code.
+- There's a separate tab to see the plan generated so far, which would be sent to calendar.
+- Added appropriate streamlit status messages instead of st write.  
+- Changed the How to use Tool function in the markdown in Home page.
+- Changed the order the tabs appear on sidebar.
+- Changed st.experimental_dialog to st.dialog decorator.
+- Moved database_functions along with utils, llm_utils inside helpers.
+- Modified .gitignore file.
+### Fixed
+- Added init file in helper directory 
+### Removed
+- Added login button instead of login url.
+
+## [Unreleased] - 2024-07-22
+ 
+Updates pushed in this commit.
+ 
+### Added
+- The model now retrieves previous chats as context. older chats are summarised, while newer chat is used as is for better precision.
+- Toggle button to update Gemini Key
+### Changed
+- Completely removed obsolete code 
+- Used st.cache to limit the number of database calls (for messages and summary)
+- cleaned the code, by fucntionising. All variables are stored in st.session_state.
+- Updated README.md
+- The image now is fetched from your google account in user
+### Fixed
+- Bug fix for updating API key
+
+## [Unreleased] - 2024-07-16
+ 
+Updates pushed in this commit.
+ 
+### Added
+ 
+### Changed
+- changed database to heroku postgres, now saves chat to postgres 
+### Fixed
+
 ## [Unreleased] - 2024-07-08
  
 Updates pushed in this commit.
@@ -15,6 +80,7 @@ Updates pushed in this commit.
 - Added instructions on how to use the tool
 - Using streamlit secrets instead of config to store secrets
 ### Fixed
+- pyscopg library fix in requirements.txt
 
 ## [Unreleased] - 2024-07-06
  
