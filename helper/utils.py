@@ -14,6 +14,7 @@ def initialize_variables():
     """
     initializes streamlit variables used in the session state, and loads user messages.
     """
+    initialize_api_key()
     st.session_state['start_date'] = None
     st.session_state['end_date'] = None
     st.session_state['start_time'] = None
@@ -27,8 +28,7 @@ def initialize_variables():
     st.session_state['plan'] = None
     st.session_state['rate_limit'] = st.secrets['message_rate_limit']
     st.session_state['timeframe'] = st.secrets['timeframe_in_mins']
-    initialize_api_key()
-
+    
     if not st.session_state['display_messages']:
         st.session_state['display_messages'] = cached_get_user_chat_messages(st.session_state['user_info']['email'], None)
 

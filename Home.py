@@ -6,6 +6,7 @@ import os
 from logzero import logger
 
 import helper.database_functions as db_funcs
+import helper.utils as utils
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 os.environ['GOOGLE_CLIENT_ID'] = st.secrets['google_oauth']['client_id']
@@ -74,7 +75,6 @@ if __name__ == "__main__":
     if 'user_info' not in st.session_state:
         st.session_state['credentials'] = None
         st.session_state['user_info'] = None
-        st.session_state['gemini_api_key'] = None
         st.warning(body="You're not logged in, please login to use the assistant")
 
     if st.session_state['user_info']:
