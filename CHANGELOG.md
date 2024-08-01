@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.0] - 2024-07-30
+ 
+Updates pushed in this commit.
+ 
+### Added
+- User login check in calendar page
+- 1 out of 5 API keys would be used randomly 
+### Changed
+- User doesn't have to provide API key for using the tool now. 
+- Error check message when user enters without logging in 
+### Fixed
+- API 400 error when talking to the assistant
+### Removed
+- Removed User entering API keya
+
 ## [1.0.0] - 2024-07-30
  
 Updates pushed in this commit.

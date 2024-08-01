@@ -59,7 +59,7 @@ def check_if_user_and_api_keys_are_set():
         st.stop()
 
     if not st.session_state['user_info'] and st.session_state['gemini_api_key']:
-        st.error("Please login before proceeding.") 
+        st.error("Please login, and wait for setup to be ready before proceeding.") 
         st.stop()
     
 def initialise_ui_layout_todolist_page():
