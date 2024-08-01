@@ -54,11 +54,11 @@ def cached_get_message_count(email, timeframe):
     return db_funcs.get_message_count_within_timeframe(cursor, email, timeframe)
 
 def check_if_user_and_api_keys_are_set():
-    if 'user_info' and 'gemini_api_key' not in st.session_state:
+    if 'user_info' not in st.session_state:
         st.error("Please login before proceeding.") 
         st.stop()
 
-    if not st.session_state['user_info'] and st.session_state['gemini_api_key']:
+    if not st.session_state['user_info']:
         st.error("Please login, and wait for setup to be ready before proceeding.") 
         st.stop()
     
