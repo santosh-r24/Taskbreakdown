@@ -51,9 +51,43 @@ def credentials_to_dict(credentials):
     return {'token': credentials.token, 'refresh_token': credentials.refresh_token, 'token_uri': credentials.token_uri, 'client_id': credentials.client_id, 'client_secret': credentials.client_secret, 'scopes': credentials.scopes}
 
 def initial_display_elements():
+    st.markdown("""
+        <style>
+            h2 {
+                color: #1E90FF; /* Blue color for h2 headings */
+            }
+            h3 {
+                color: #1E90FF; /* Blue color for h3 headings */
+            }
+            h4 {
+                color: #1E90FF; /* Blue color for h3 headings */
+            }
+            p, li {
+                color: #FFFFFF; /* White color for paragraph and list items */
+            }
+        </style>
+        """, unsafe_allow_html=True)
+    
     st.header("TaskBreakdown 📝", divider='rainbow')
     # st.sidebar.markdown("# Home 📝")
-    st.subheader("This is a smart assistant to help break down your big seemingly complex tasks, into smaller steps that makes it easier to build on each day!")
+    st.subheader("Break down your big goals into manageable steps")
+
+    st.markdown("""
+    ## About TaskBreakdown
+    TaskBreakdown is a smart assistant designed to help you break down your long-term goals into manageable steps. Whether you're looking to lose weight, switch jobs, or achieve any other complex goal, TaskBreakdown provides a personalized plan tailored to your needs.
+
+    #### What Can You Do with TaskBreakdown?
+    - **Set Long-Term Goals**: Define your big goals and let the assistant help you break them down.
+    - **Create Action Plans**: Get detailed, actionable steps to achieve your goals.
+    - **Sync with Google Calendar**: Schedule your tasks and stay on track by syncing them with your Google Calendar.
+    - **Track Progress**: Use the structured plan to make tangible progress on your goals.
+
+    #### Example Goals:
+    - **Lose Weight**: "How can I lose weight?"
+    - **Switch Jobs**: "How can I switch jobs in my industry but don't know where to start?"
+    - **Run a Marathon**: "How do I prepare to run a marathon in six months?"
+    - **Learn a New Skill**: "What steps should I take to learn Python programming?"
+                """)
     
     st.markdown("""
     ## How to Begin:
@@ -77,36 +111,12 @@ if __name__ == "__main__":
         st.warning(body="You're not logged in, please login to use the assistant")
 
     if st.session_state['user_info']:
-        # logger.debug(st.session_state['user_info'])
         if not db_funcs.is_user_present(cursor, st.session_state['user_info']['email']):
             db_funcs.save_user(cursor, db, st.session_state['user_info']['email'], st.session_state['user_info']['name'], st.session_state['user_info']['picture'])
     
         st.info(f"Welcome {st.session_state['user_info']['name']} ")
         st.success("Setup Ready! You can now head onto the Todolist tab, to talk to the assistant :)")
         logger.info(f"Welcome {st.session_state['user_info']['name']} ")
-        # logger.debug(st.session_state['gemini_api_key'])
-        # st.session_state['gemini_api_key'] = get_cached_api_key(st.session_state['user_info']['email'])
-
-        # Update_key = st.toggle(label="Update Gemini key")
-        # if Update_key:
-        #     api_key_input = st.text_input("Enter your Gemini API Key", type="password")
-        #     submit = st.button(label="Submit")
-        #     if submit and api_key_input != None:
-        #         st.session_state['gemini_api_key'] = api_key_input
-        #         # logger.debug(st.session_state['gemini_api_key'])
-        #         db_funcs.save_user(cursor, db, st.session_state['user_info']['email'], st.session_state['user_info']['name'], st.session_state['user_info']['picture'], st.session_state['gemini_api_key'])
-        #         get_cached_api_key.clear()
-        #         st.success(f"API key saved successfully")
-        #     elif api_key_input== None and submit:
-        #         st.error(f"API key can't be empty")
-        #         # logger.debug(st.session_state['gemini_api_key'])
-
-        # if st.session_state['gemini_api_key']:
-        #     st.success(body="API Key found and loaded")
-        #     logger.info(f"API key is loaded for {st.session_state['user_info']['name']}")
-        # else: 
-        #     st.warning(f"Your API key is Not set, please update the API key before you can proceed.")
-        # logger.debug(f"api key value = {st.session_state['gemini_api_key']}")
     else:
         user_info = process_callback()
         if user_info:
