@@ -8,6 +8,7 @@ import helper.utils as utils
 import helper.database_functions as db_funcs
     
 if __name__ == "__main__":
+    utils.check_if_user_and_api_keys_are_set()
     db, cursor = db_funcs.initialize_database()
     if not all([st.session_state['start_date'], 
     st.session_state['end_date'],

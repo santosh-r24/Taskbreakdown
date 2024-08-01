@@ -55,11 +55,11 @@ def cached_get_message_count(email, timeframe):
 
 def check_if_user_and_api_keys_are_set():
     if 'user_info' and 'gemini_api_key' not in st.session_state:
-        st.error("Please login and set your gemini key, before proceeding.") 
+        st.error("Please login before proceeding.") 
         st.stop()
 
     if not st.session_state['user_info'] and st.session_state['gemini_api_key']:
-        st.error("Please login and set your gemini key, before proceeding.") 
+        st.error("Please login before proceeding.") 
         st.stop()
     
 def initialise_ui_layout_todolist_page():
