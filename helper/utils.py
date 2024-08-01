@@ -67,7 +67,7 @@ def initialise_ui_layout_todolist_page():
     Sets the initial UI display of Todolist tab elements.
     """
     st.header("To-Do List Smart Assistant")
-    st.markdown(''' :blue-background[Tip: Read the instructions to get a better understanding on how the tool can help you!] ''')
+    st.markdown(''' :blue-background[Tip: Read How to Use menu to get a better understanding on how the tool can help you!] ''')
     col1, col2 = st.columns(2, gap="small", vertical_alignment="top")
     with col1:
         with st.popover("How to Use"):

@@ -54,13 +54,13 @@ def initial_display_elements():
     st.markdown("""
         <style>
             h2 {
-                color: #1E90FF; /* Blue color for h2 headings */
+                color: #FF0000; /* Blue color for h2 headings */
             }
             h3 {
-                color: #1E90FF; /* Blue color for h3 headings */
+                color: #FF0000; /* Blue color for h3 headings */
             }
             h4 {
-                color: #1E90FF; /* Blue color for h3 headings */
+                color: #FF0000; /* Blue color for h3 headings */
             }
             p, li {
                 color: #FFFFFF; /* White color for paragraph and list items */
@@ -68,7 +68,7 @@ def initial_display_elements():
         </style>
         """, unsafe_allow_html=True)
     
-    st.header("TaskBreakdown 📝", divider='rainbow')
+    st.header(":red[TaskBreakdown - Development] 📝", divider='rainbow')
     # st.sidebar.markdown("# Home 📝")
     st.subheader("Break down your big goals into manageable steps")
 
