@@ -30,9 +30,7 @@ def initialise_model_setup():
                     ii. If the tasks are not synced to google, inform the user to sync the tasks to google before attempting this. **DO NOT PROMPT FOR ADDITIONAL DETAILS FOR FUNCTION CALLING**
 
                 4. If a function call returns an error or unexpected result, inform the user with a clear and helpful message, suggesting possible next steps or alternatives.
-
                 5. If a plan is provided but not synced to google, let the user know they can sync to google tasks.
-
                 6. If a question is irrelevant to the SMART framework and task breakdowns, politely respond, "Sorry, I can't help with this request.".
                 """
     
@@ -110,9 +108,7 @@ def generate_response(messages:list, model:genai.GenerativeModel, max_tokens = 5
         messages = [{"role": "model", "parts": [summary]}] + messages[-5:]
         st.session_state['messages'] = messages[-5:]
     messages = copy.deepcopy(messages)
-
     _append_conditional_messages(messages)
-
     response = model.generate_content(messages)
     candidate = response.candidates[0]
     logger.debug(f"candidate is -> {candidate}")
@@ -124,7 +120,6 @@ def generate_response(messages:list, model:genai.GenerativeModel, max_tokens = 5
             break
 
     _handle_llm_function_call(messages, function_call)
-    
     return response
 
 def _append_conditional_messages(messages):

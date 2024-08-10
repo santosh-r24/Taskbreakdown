@@ -28,6 +28,7 @@ def initialise_side_bar_components():
         time_markdown = '''
         Set the start and end time for you can allocate to train per your training plan.
         '''.strip()
+        
         set_time = st.toggle(label="Schedule Time :timer_clock:", help=time_markdown)
         if set_time:
             with st.spinner("Schedule is being updated.."):

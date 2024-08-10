@@ -121,7 +121,6 @@ if __name__ == "__main__":
             if st.session_state['plan']:
                 first_entry = st.session_state['plan'][0]
                 last_entry = st.session_state['plan'][-1]
-        
                 # Initialize the variables
                 st.session_state['start_date'] = first_entry['date']
                 st.session_state['end_date'] = last_entry['date']

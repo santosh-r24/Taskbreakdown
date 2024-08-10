@@ -1,7 +1,6 @@
 import streamlit as st
 import psycopg2
 import json
-from cryptography.fernet import Fernet
 from logzero import logger
 import datetime
 
@@ -99,8 +98,8 @@ def save_user(cursor, connection, email: str, name: str, picture: str):
 
 def get_message_count_within_timeframe(cursor, email, timeframe):
     """
-    cursor: 
-    email: 
+    cursor: cursor
+    email: email of user
     timeframe: duration till which rate_limit will apply to cap messages. This is set to 1 hour by default.
     
     returns
