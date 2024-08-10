@@ -2,6 +2,8 @@
 import random
 import streamlit as st
 import datetime
+import datetime
+
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -27,6 +29,10 @@ def initialize_variables():
     st.session_state['chat_model'] = None
     st.session_state['plan_model'] = None
     st.session_state['plan'] = None
+    st.session_state['task_ids_generated'] = False
+    st.session_state['goal_title'] = None
+    st.session_state['calendar_service'] = None
+    st.session_state['timezone'] = None
     st.session_state['task_ids_generated'] = False
     st.session_state['goal_title'] = None
     st.session_state['calendar_service'] = None
@@ -59,9 +65,12 @@ def _initialize_api_key():
     """
     Randomly initialises api key.
     """
-    if 'gemini_api_key' not in st.session_state:
-        st.session_state['gemini_api_key'] = random.choice(list(st.secrets['api_keys'].values()))
-        logger.debug(f"This session uses the key {st.session_state['gemini_api_key']}")
+    st.session_state['rate_limit'] = st.secrets['message_rate_limit']
+    st.session_state['timeframe'] = st.secrets['timeframe_in_mins']
+    st.session_state['variables_initialised'] = True
+    
+    if not st.session_state['display_messages']:
+        st.session_state['display_messages'] = cached_get_user_chat_messages(st.session_state['user_info']['email'], None)
 
 @st.cache_data(show_spinner=False)
 def cached_get_user_chat_messages(email: str, timestamp=None):
@@ -93,6 +102,8 @@ def initialise_ui_layout_todolist_page():
     Sets the initial UI display of Todolist tab elements.
     """
     st.header("To-Do List Smart Assistant")
+    st.markdown(''' :blue-background[Tip: Read How to Use menu to get a better understanding on how the assistant can help you!] ''')
+
     st.markdown(''' :blue-background[Tip: Read How to Use menu to get a better understanding on how the assistant can help you!] ''')
     col1, col2 = st.columns(2, gap="small", vertical_alignment="top")
     with col1:
@@ -168,7 +179,7 @@ def get_calendar_service():
     except HttpError as error:
         st.error(f'An error occurred: {error}')
         return None
-    
+      
 def _get_tasks_service():
     creds = Credentials(
         token=st.session_state['credentials']['token'],
@@ -191,7 +202,6 @@ def map_composite_to_dict(map_composite):
     """
     result = {}
     for key, value in map_composite.items():
-        # Directly check the type of value instead of using HasField
         if isinstance(value, str):
             result[key] = value
         elif isinstance(value, int) or isinstance(value, float) or isinstance(value, bool):
@@ -202,9 +212,8 @@ def map_composite_to_dict(map_composite):
             result[key] = value.number_value
         elif hasattr(value, "bool_value"):
             result[key] = value.bool_value
-        # Handle other value types as needed (e.g., list_value, struct_value)
         else:
-            result[key] = str(value)  # Default case, convert to string
+            result[key] = str(value)
     return result
 
 def fetch_tasks_from_google_tasks(due_date :str =None) -> list:
@@ -240,7 +249,6 @@ def fetch_tasks_from_google_tasks(due_date :str =None) -> list:
         except HttpError as error:
             st.error(f'An error occurred: {error}')
             function_result.append(f'An error occurred: {error}')
-            # return []
     return function_result
            
 def add_or_update_task_to_google_tasks(dummy_arg: str = "") -> list:
@@ -291,7 +299,6 @@ def add_or_update_task_to_google_tasks(dummy_arg: str = "") -> list:
             db_funcs.save_task_ids(cursor, db, st.session_state['user_info']['email'], result['id'], date_obj)
             logger.debug("Saved and added to google tasks")
         except HttpError as error:
-            st.error(f'An error occurred while adding/updating the task: {error}')
             logger.debug("error when syncing")
             function_result.append(f'An error occurred while adding/updating the task: {error}')
     st.session_state['task_ids_generated'] = True

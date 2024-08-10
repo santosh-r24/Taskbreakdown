@@ -21,6 +21,6 @@ This is a PoC for a todolist agent, which breaks down big goals into smaller tas
 6. You can see if a summary has been generated, by toggling the summary button.
 7. If a summary hasn't been generated, the agent uses all previous messages as context. 
 8. Currently the summary can't be edited.
-10. The agent only *remembers* the latest summary (if present) and the messages post it.
-11. Delete chat in the side bar can be used to delete all chat interactions with the agent.
-12. Delete summary in the side bar, deletes all summaries.
+9. The agent only *remembers* the latest summary (if present) and the messages post it.
+10. Delete chat in the side bar can be used to delete all chat interactions with the agent.
+11. Delete summary in the side bar, deletes all summaries.

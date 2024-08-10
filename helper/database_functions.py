@@ -87,6 +87,45 @@ def save_task_ids(cursor, connection, email: str, task_id: str, date: datetime):
     )
     connection.commit()
 
+
+def check_if_google_tasks_are_created(cursor, email:str) -> bool:
+    cursor.execute('SELECT task_ids FROM goal_plan WHERE email=%s', (email,))
+    result = cursor.fetchone()
+    return result is not None and result[0] is not None
+
+def fetch_plan_if_generated(cursor, email:str):
+    cursor.execute('SELECT plan FROM goal_plan WHERE email=%s', (email,))
+    result = cursor.fetchone()
+    if result:
+        return result[0]
+    return None
+
+def save_plan(cursor, connection, email: str, plan: json):
+    cursor.execute('INSERT INTO goal_plan (email, plan) VALUES (%s, %s) ON CONFLICT (email) DO UPDATE SET plan = EXCLUDED.plan', (email, json.dumps(plan)))
+    connection.commit()
+
+def fetch_task_ids(cursor, email: str):
+    cursor.execute('SELECT task_ids FROM goal_plan WHERE email=%s', (email,))
+    result = cursor.fetchone()
+    if result and result[0]:
+        return json.loads(result[0])
+    return {}
+
+def save_task_ids(cursor, connection, email: str, task_id: str, date: datetime):
+    logger.debug("Tasks are being saved ")
+    task_date = date.strftime('%Y-%m-%d')
+    task_id_entry = {task_date: task_id}
+    cursor.execute('''
+        UPDATE goal_plan
+        SET task_ids = '{}'
+        WHERE email = %s AND task_ids IS NULL
+    ''', (email,))
+    cursor.execute(
+        'INSERT INTO goal_plan (email, task_ids) VALUES (%s, %s) ON CONFLICT (email) DO UPDATE SET task_ids = goal_plan.task_ids || %s::jsonb',
+        (email, json.dumps(task_id_entry), json.dumps(task_id_entry))
+    )
+    connection.commit()
+
 def is_user_present(cursor, email: str) -> bool:
     cursor.execute('SELECT email FROM users WHERE email=%s', (email,))
     return cursor.fetchone() is not None
