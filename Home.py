@@ -99,16 +99,6 @@ def initial_display_elements():
     3. **Navigate to the Todolist Tab**: Go to the Todolist tab using the side bar and read the How to Use pop down to get help with using the assistant.
     """)
 
-
-if __name__ == "__main__":
-    st.set_page_config(page_title='Taskbreakdown', page_icon='', initial_sidebar_state='expanded', layout='wide', menu_items={'Report a Bug':'https://forms.gle/C8Zv8hzvYhPPvDW16'})
-    login_status_container = st.container()
-
-@st.cache_data(show_spinner=False)
-def get_cached_api_key(email:str):
-    db, cursor = db_funcs.initialize_database()
-    return db_funcs.get_user_api_key(cursor, email)
-
 if __name__ == "__main__":
     st.set_page_config(page_title='Taskbreakdown', page_icon='', initial_sidebar_state='expanded', layout='wide', menu_items={'Report a Bug':'https://forms.gle/C8Zv8hzvYhPPvDW16'})
     login_status_container = st.container()

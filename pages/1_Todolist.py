@@ -57,8 +57,7 @@ def initialise_side_bar_components():
             utils.delete_summary_records(cursor, db)
 
 if __name__ == "__main__":
-    # Run initialization only if not already initialized
-    st.set_page_config(page_title='Todolist', page_icon=':memo:', initial_sidebar_state='expanded', layout='wide')
+    st.set_page_config(page_title='Todolist', page_icon=':memo:', initial_sidebar_state='expanded', layout='wide', menu_items={'Report a Bug':'https://forms.gle/C8Zv8hzvYhPPvDW16'})
     utils.check_if_user_loggedin()
     utils.initialize_previous_messages()
     utils.initialise_ui_layout_todolist_page()
