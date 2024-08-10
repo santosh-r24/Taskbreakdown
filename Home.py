@@ -1,8 +1,10 @@
-import streamlit as st
-from google_auth_oauthlib.flow import Flow
+import datetime
+import os
 import google.auth.transport.requests
 import google.oauth2.id_token
-import os 
+import streamlit as st
+from google_auth_oauthlib.flow import Flow
+
 from logzero import logger
 
 import helper.database_functions as db_funcs
@@ -123,10 +125,10 @@ if __name__ == "__main__":
             if st.session_state['plan']:
                 first_entry = st.session_state['plan'][0]
                 last_entry = st.session_state['plan'][-1]
-                st.session_state['start_date'] = first_entry['date']
-                st.session_state['end_date'] = last_entry['date']
-                st.session_state['start_time'] = first_entry['start_time']
-                st.session_state['end_time'] = first_entry['end_time']
+                st.session_state['start_date'] = datetime.datetime.strptime(first_entry['date'], "%Y-%m-%d").date()
+                st.session_state['end_date'] = datetime.datetime.strptime(last_entry['date'], "%Y-%m-%d").date()
+                st.session_state['start_time'] = datetime.datetime.strptime(first_entry['start_time'], "%H:%M:%S").time()
+                st.session_state['end_time'] = datetime.datetime.strptime(first_entry['end_time'], "%H:%M:%S").time()
         
         with login_status_container:
             st.success(f"Welcome {st.session_state['user_info']['name']}. Setup is ready! You can now head onto the Todolist tab, to talk to the assistant :)")
