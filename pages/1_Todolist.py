@@ -6,29 +6,36 @@ import datetime
 import helper.utils as utils
 import helper.llm_utils as llm_utils
 import helper.database_functions as db_funcs
-
-if 'initialized' not in st.session_state:
-    st.session_state['initialized'] = False
+import column_2
 
 def initialise_side_bar_components():
     """
     Contains components that are present in the side bar, apart from pages.
     """
     with st.sidebar:
-        set_date = st.toggle(label="Set Timelines")
+
+        date_markdown = '''
+        Set the start and due dates for your training plan.
+        '''.strip()
+        set_date = st.toggle(label="Set Timelines :date:", help=date_markdown)
         if set_date:
             with st.spinner("Timeline is being updated.."):
                 with st.container(border=True, height=200):
-                    st.session_state['start_date'] = st.date_input("Start date")
-                    st.session_state['end_date'] = st.date_input("End date")
-            st.success(f"Timeline updated from {st.session_state['start_date']} to {st.session_state['end_date']}!")
-        set_time = st.toggle(label="Schedule Time")
+                    st.session_state['start_date'] = st.date_input("Start date", value=st.session_state['start_date'])
+                    st.session_state['end_date'] = st.date_input("End date", value=st.session_state['end_date'])
+            st.toast(f"Timeline updated from {st.session_state['start_date']} to {st.session_state['end_date']}!")
+        
+        time_markdown = '''
+        Set the start and end time for you can allocate to train per your training plan.
+        '''.strip()
+        
+        set_time = st.toggle(label="Schedule Time :timer_clock:", help=time_markdown)
         if set_time:
             with st.spinner("Schedule is being updated.."):
                 with st.container(border=True, height=200):
-                    st.session_state['start_time'] = st.time_input("Set start time", datetime.time(0, 00))
-                    st.session_state['end_time'] = st.time_input("Set end time", datetime.time(1, 00))
-            st.success(f"Schedule updated from {st.session_state['start_time']} to {st.session_state['end_time']} !")
+                    st.session_state['start_time'] = st.time_input("Set start time", value=st.session_state['start_time'])
+                    st.session_state['end_time'] = st.time_input("Set end time", value=st.session_state['end_time'])
+            st.toast(f"Schedule updated from {st.session_state['start_time']} to {st.session_state['end_time']} !")
         check_summary = st.toggle("See the Summary so far")
         if check_summary:
             if st.session_state['latest_summary']:
@@ -44,54 +51,49 @@ def initialise_side_bar_components():
 
 if __name__ == "__main__":
     # Run initialization only if not already initialized
-    utils.check_if_user_and_api_keys_are_set()
-    if not st.session_state['initialized']:
-        utils.initialize_variables()
+    st.set_page_config(page_title='Todolist', page_icon=':memo:', initial_sidebar_state='expanded', layout='wide')
+    utils.check_if_user_loggedin()
+    utils.initialize_previous_messages()
     utils.initialise_ui_layout_todolist_page()
     db, cursor = db_funcs.initialize_database()
     llm_utils.initialise_model_setup()
     initialise_side_bar_components()
-
-    if 'messages_loaded' not in st.session_state:
-        with st.spinner("Fetching previous messages"):
-            logger.info("Summary is being fetched")
-            summary, latest_summary_timestamp = utils.cached_get_latest_summary(st.session_state['user_info']['email'])
-            st.session_state['latest_summary'] = summary
-            if summary:
-                new_messages = utils.cached_get_user_chat_messages(st.session_state['user_info']['email'], latest_summary_timestamp)
-                st.session_state['messages'] = new_messages
-            else:
-                st.session_state['messages'] = st.session_state['display_messages']
-            st.session_state['messages_loaded'] = True
-            logger.info(f"Messages are initialised for {st.session_state['user_info']['email']}")
-    # Displays all chat messages from history on app rerun
-    for message in st.session_state['display_messages']:
-        with st.chat_message(message["role"]):
-            st.markdown(message["parts"][0])
+    col_1, col_2 = st.columns([0.7,0.3])
     
     # React to user input
-    if prompt:= st.chat_input("Type down your query"):
-        message_count = utils.cached_get_message_count(st.session_state['user_info']['email'], datetime.timedelta(minutes=st.session_state['timeframe']))
-        logger.debug(f"User {st.session_state['user_info']['name']} reached {message_count} messages")
-        if message_count <= st.session_state['rate_limit']:
-            st.chat_message("user", avatar=st.session_state['user_info']['picture']).markdown(prompt)
-            if st.session_state['start_date'] and st.session_state['end_date']:
-                prompt += f"""\tstart_date:{st.session_state['start_date'].strftime('%Y-%m-%d')}, end_date:{st.session_state['end_date'].strftime('%Y-%m-%d')}
-                            """
-            if st.session_state['start_time'] and st.session_state['end_time']:
-                prompt += f"""\tstart_time:{st.session_state['start_time'].strftime('%H-%M-%S')}, end_time:{st.session_state['end_time'].strftime('%H-%M-%S')}"""
-            # logger.debug(f"Appending user message: {prompt}")
-            st.session_state['messages'].append({"role":"user", "parts": [prompt]})
-            st.session_state['display_messages'].append({"role":"user", "parts": [prompt]})
-            db_funcs.save_chat_message(cursor, db, st.session_state['user_info']['email'], "user", prompt)
-            with st.spinner("Generating response... please wait"):
-                response = llm_utils.generate_response(messages=st.session_state['messages'], model=st.session_state['chat_model'], db=db, cursor=cursor)
+    with col_1:
+        st.subheader("SMART ASSISTANT")
+        a = st.container(height=600)
+        # Displays all chat messages from history on app rerun
+        with a:
+            for message in st.session_state['display_messages']:
+                with st.chat_message(message["role"]):
+                    st.markdown(message["parts"][0])
 
-            with st.chat_message("assistant"):
-                st.markdown(response.text)
-            # Add assistant response to chat history
-            st.session_state['messages'].append({"role":"model", "parts": [response.text]})
-            st.session_state['display_messages'].append({"role":"model", "parts": [response.text]})
-            db_funcs.save_chat_message(cursor, db, st.session_state['user_info']['email'], "model", response.text)
-        else: 
-            st.warning("Rate limit exceeded. Please try again later.")
+        # with st.container():
+        if prompt:= st.chat_input("How do i train for a marathon in 6 months, i can run 3 days a week"):
+            message_count = utils.cached_get_message_count(st.session_state['user_info']['email'], datetime.timedelta(minutes=st.session_state['timeframe']))
+            logger.debug(f"User {st.session_state['user_info']['name']} reached {message_count} messages")
+            if message_count <= st.session_state['rate_limit']:
+                with a:
+                    st.chat_message("user").markdown(prompt) #st.session_state['user_info']['picture']
+                # logger.debug(f"Appending user message: {prompt}")
+                st.session_state['messages'].append({"role":"user", "parts": [prompt]})
+                st.session_state['display_messages'].append({"role":"user", "parts": [prompt]})
+                db_funcs.save_chat_message(cursor, db, st.session_state['user_info']['email'], "user", prompt)
+                with st.spinner("Generating response... please wait"):
+                    response = llm_utils.generate_response(messages=st.session_state['messages'], model=st.session_state['chat_model'], db=db, cursor=cursor)
+                with a:
+                    with st.chat_message("assistant"):
+                        st.markdown(response.text)
+                # Add assistant response to chat history
+                st.session_state['messages'].append({"role":"model", "parts": [response.text]})
+                st.session_state['display_messages'].append({"role":"model", "parts": [response.text]})
+                db_funcs.save_chat_message(cursor, db, st.session_state['user_info']['email'], "model", response.text)
+            else: 
+                st.toast("Rate limit of 10 exceeded. Please try again later.")
+    with col_2:
+        column_2._contents_of_column_2(db,cursor)
+        
+    logger.debug(f"tasks are generated: {st.session_state['task_ids_generated']}")
+    logger.debug(f"st.session_state['goal_title'] = {st.session_state['goal_title']}")

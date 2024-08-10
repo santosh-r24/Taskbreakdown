@@ -3,4 +3,5 @@ config.py
 user_data.db
 media/
 .streamlit
+database_commands.py
 __pycache__
