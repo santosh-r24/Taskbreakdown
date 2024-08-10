@@ -22,7 +22,7 @@ def initialise_model_setup():
                     b. If not, ask questions to gather additional context to ensure the goal fits the SMART framework. Ask about the time the user can dedicate to the goal and the level of support required.
                     
                 2.Generate an appropriate function call if:
-                a. If the user requests to sync/add/update tasks to Google Tasks, call the function `add_or_update_task_to_google_tasks`.
+                a. If the user requests to sync/add/update tasks to Google Tasks, call the function `add_or_update_task_to_google_tasks`. Don't suggest 
                     i. if the plan is present call the function directly. **DO NOT PROMPT FOR ADDITIONAL DETAILS FOR FUNCTION CALLING**.
                     ii. If the plan is missing, inform the user to generate the plan 1st. **DO NOT PROMPT FOR ADDITIONAL DETAILS FOR FUNCTION CALLING**.
                 b. If the user requests for feedback on progress/fetch tasks, call the function `fetch_tasks_from_google_tasks`.
@@ -30,8 +30,10 @@ def initialise_model_setup():
                     ii. If the tasks are not synced to google, inform the user to sync the tasks to google before attempting this. **DO NOT PROMPT FOR ADDITIONAL DETAILS FOR FUNCTION CALLING**
 
                 4. If a function call returns an error or unexpected result, inform the user with a clear and helpful message, suggesting possible next steps or alternatives.
-                5. If a plan is provided but not synced to google, let the user know they can sync to google tasks.
-                6. If a question is irrelevant to the SMART framework and task breakdowns, politely respond, "Sorry, I can't help with this request.".
+                5. If a plan is provided but a detailed_plan isn't generated, let the user know they can generate a detailed plan.
+                6. if a detailed_plan is generated, but the tasks are not synced to Google Tasks, let the user know they can Sync the tasks to google tasks.
+                7. Only calendar events can be synced and generated using the 'Send plan to calendar' button, this can be suggested only after detailed_plan is generated.
+                8. If a question is irrelevant to the SMART framework and task breakdowns, politely respond, "Sorry, I can't help with this request.".
                 """
     
     json_system_behavior = """
@@ -130,9 +132,9 @@ def _append_conditional_messages(messages):
         messages[-1]['parts'][0] += f"""\t start_time:{st.session_state['start_time'].strftime('%H-%M-%S')}, end_time:{st.session_state['end_time'].strftime('%H-%M-%S')}"""
 
     if st.session_state['plan']:
-        messages[-1]['parts'][0] += f'\n The plan is: {st.session_state["plan"]}'
+        messages[-1]['parts'][0] += f'\n The detailed_plan is: {st.session_state["plan"]}'
     else:
-        messages[-1]['parts'][0] += f'\n No plan is generated'
+        messages[-1]['parts'][0] += f'\n No detailed_plan is generated'
         
     if not st.session_state['task_ids_generated']:
         messages[-1]['parts'][0] += f'\n Tasks not synced to google'

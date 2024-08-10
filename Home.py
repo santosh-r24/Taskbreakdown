@@ -123,31 +123,6 @@ if __name__ == "__main__":
             if st.session_state['plan']:
                 first_entry = st.session_state['plan'][0]
                 last_entry = st.session_state['plan'][-1]
-                # Initialize the variables
-                st.session_state['start_date'] = first_entry['date']
-                st.session_state['end_date'] = last_entry['date']
-                st.session_state['start_time'] = first_entry['start_time']
-                st.session_state['end_time'] = first_entry['end_time']
-        
-        with login_status_container:
-            st.success(f"Welcome {st.session_state['user_info']['name']}. Setup is ready! You can now head onto the Todolist tab, to talk to the assistant :)")
-        st.toast("Setup Ready! You can now head onto the Todolist tab, to talk to the assistant :)")
-        st.warning(body="You're not logged in, please login to use the assistant")
-
-    if st.session_state['user_info']:
-        if not db_funcs.is_user_present(cursor, st.session_state['user_info']['email']):
-            db_funcs.save_user(cursor, db, st.session_state['user_info']['email'], st.session_state['user_info'].get('name', 'User'), st.session_state['user_info'].get('picture', ''))
-
-        if not st.session_state['variables_initialised']:
-            utils.initialize_variables()
-            st.session_state['calendar_service'] = utils.get_calendar_service()
-            st.session_state['timezone'] = utils.get_user_timezone(st.session_state['calendar_service'])
-            st.session_state['task_ids_generated'] = db_funcs.check_if_google_tasks_are_created(cursor, st.session_state['user_info']['email'])
-            st.session_state['plan'] = db_funcs.fetch_plan_if_generated(cursor, st.session_state['user_info']['email'])
-            if st.session_state['plan']:
-                first_entry = st.session_state['plan'][0]
-                last_entry = st.session_state['plan'][-1]
-                # Initialize the variables
                 st.session_state['start_date'] = first_entry['date']
                 st.session_state['end_date'] = last_entry['date']
                 st.session_state['start_time'] = first_entry['start_time']

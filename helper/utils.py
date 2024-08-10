@@ -33,10 +33,6 @@ def initialize_variables():
     st.session_state['goal_title'] = None
     st.session_state['calendar_service'] = None
     st.session_state['timezone'] = None
-    st.session_state['task_ids_generated'] = False
-    st.session_state['goal_title'] = None
-    st.session_state['calendar_service'] = None
-    st.session_state['timezone'] = None
     st.session_state['rate_limit'] = st.secrets['message_rate_limit']
     st.session_state['timeframe'] = st.secrets['timeframe_in_mins']
     st.session_state['variables_initialised'] = True
@@ -65,12 +61,9 @@ def _initialize_api_key():
     """
     Randomly initialises api key.
     """
-    st.session_state['rate_limit'] = st.secrets['message_rate_limit']
-    st.session_state['timeframe'] = st.secrets['timeframe_in_mins']
-    st.session_state['variables_initialised'] = True
-    
-    if not st.session_state['display_messages']:
-        st.session_state['display_messages'] = cached_get_user_chat_messages(st.session_state['user_info']['email'], None)
+    if 'gemini_api_key' not in st.session_state:
+        st.session_state['gemini_api_key'] = random.choice(list(st.secrets['api_keys'].values()))
+        logger.debug(f"This session uses the key {st.session_state['gemini_api_key']}")
 
 @st.cache_data(show_spinner=False)
 def cached_get_user_chat_messages(email: str, timestamp=None):
@@ -102,8 +95,6 @@ def initialise_ui_layout_todolist_page():
     Sets the initial UI display of Todolist tab elements.
     """
     st.header("To-Do List Smart Assistant")
-    st.markdown(''' :blue-background[Tip: Read How to Use menu to get a better understanding on how the assistant can help you!] ''')
-
     st.markdown(''' :blue-background[Tip: Read How to Use menu to get a better understanding on how the assistant can help you!] ''')
     col1, col2 = st.columns(2, gap="small", vertical_alignment="top")
     with col1:

@@ -40,7 +40,7 @@ def _contents_of_column_2(db, cursor):
         logger.debug(f"The plan has been printed")
 
     st.subheader("SYNC PLANS TO GOOGLE")
-    st.info("Click Send to Calendar, for the plan to be synced to calendar.")
+    st.info("Click Send to Calendar, for the detailed plan to be synced to calendar.")
     if st.button("Send plan to Calendar :spiral_calendar_pad:"):
         with st.spinner("Syncing plan to Calendar..."):
             service = utils.get_calendar_service()
