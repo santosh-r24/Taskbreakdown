@@ -3,6 +3,26 @@ All notable changes to this project will be documented in this file.
  
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
+## [1.2.0] - 2024-07-30
+ 
+Updates pushed in this commit.
+ 
+### Added
+- Syncing daily plans to google tasks via chat. 
+- Detailed Plans are now stored to database, after they're generated
+- Report Bug feature, which would submit feedback and bugs on google forms
+### Changed
+- Changed layout of the pages. 
+- Messages are now added to the container
+- login link has been moved to the top
+- added st.toast which acts as a popup notification
+- loads plan, dates and time if they're saved from before.
+- system instruction
+- temperature of system
+### Fixed
+- Incorrect scopes on tasks
+### Removed
+- Extra calendar page
 
 ## [1.1.0] - 2024-07-30
  
@@ -17,7 +37,7 @@ Updates pushed in this commit.
 ### Fixed
 - API 400 error when talking to the assistant
 ### Removed
-- Removed User entering API keya
+- Removed User entering API keys
 
 ## [1.0.0] - 2024-07-30
  

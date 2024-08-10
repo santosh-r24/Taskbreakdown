@@ -3,16 +3,7 @@ import psycopg2
 import json
 from cryptography.fernet import Fernet
 from logzero import logger
-import base64
-import binascii
-import cryptography
 import datetime
-
-def load_key():
-    fernet_key_str = st.secrets["encryption_key"]
-    return Fernet(fernet_key_str.encode())
-
-cipher = load_key()
 
 def initialize_database():
     database_url = st.secrets["database_url"]
@@ -22,11 +13,20 @@ def initialize_database():
     CREATE TABLE IF NOT EXISTS users (
         email TEXT PRIMARY KEY,
         name TEXT,
-        picture TEXT,
-        gemini_api_key TEXT
+        picture TEXT
     )
     ''')
-    
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS goal_plan (
+        email TEXT PRIMARY KEY,
+        plan JSONB,
+        task_ids JSONB,
+        FOREIGN KEY(email) REFERENCES users(email)
+    )
+    ''')
+
+    # Create a new table goal_plan that stores plan, tasks_id (from google tasks), and dates foregin key being email, and references user
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS chat_messages (
         id SERIAL PRIMARY KEY,
@@ -51,34 +51,51 @@ def initialize_database():
     connection.commit()
     return connection, cursor
 
+def check_if_google_tasks_are_created(cursor, email:str) -> bool:
+    cursor.execute('SELECT task_ids FROM goal_plan WHERE email=%s', (email,))
+    result = cursor.fetchone()
+    return result is not None and result[0] is not None
+
+def fetch_plan_if_generated(cursor, email:str):
+    cursor.execute('SELECT plan FROM goal_plan WHERE email=%s', (email,))
+    result = cursor.fetchone()
+    if result:
+        return result[0]
+    return None
+
+def save_plan(cursor, connection, email: str, plan: json):
+    cursor.execute('INSERT INTO goal_plan (email, plan) VALUES (%s, %s) ON CONFLICT (email) DO UPDATE SET plan = EXCLUDED.plan', (email, json.dumps(plan)))
+    connection.commit()
+
+def fetch_task_ids(cursor, email: str):
+    cursor.execute('SELECT task_ids FROM goal_plan WHERE email=%s', (email,))
+    result = cursor.fetchone()
+    if result and result[0]:
+        return json.loads(result[0])
+    return {}
+
+def save_task_ids(cursor, connection, email: str, task_id: str, date: datetime):
+    logger.debug("Tasks are being saved ")
+    task_date = date.strftime('%Y-%m-%d')
+    task_id_entry = {task_date: task_id}
+    cursor.execute('''
+        UPDATE goal_plan
+        SET task_ids = '{}'
+        WHERE email = %s AND task_ids IS NULL
+    ''', (email,))
+    cursor.execute(
+        'INSERT INTO goal_plan (email, task_ids) VALUES (%s, %s) ON CONFLICT (email) DO UPDATE SET task_ids = goal_plan.task_ids || %s::jsonb',
+        (email, json.dumps(task_id_entry), json.dumps(task_id_entry))
+    )
+    connection.commit()
+
 def is_user_present(cursor, email: str) -> bool:
     cursor.execute('SELECT email FROM users WHERE email=%s', (email,))
     return cursor.fetchone() is not None
 
-def save_user(cursor, connection, email: str, name: str, picture: str, gemini_api_key: str = None):
-    if gemini_api_key:
-        encrypted_key = cipher.encrypt(gemini_api_key.encode())
-        encrypted_key_base64 = base64.urlsafe_b64encode(encrypted_key).decode('utf-8')
-        cursor.execute('INSERT INTO users (email, name, picture, gemini_api_key) VALUES (%s, %s, %s, %s) ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, picture = EXCLUDED.picture, gemini_api_key = EXCLUDED.gemini_api_key', (email, name, picture, encrypted_key_base64))
-    else:
-        cursor.execute('INSERT INTO users (email, name, picture) VALUES (%s, %s, %s) ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, picture = EXCLUDED.picture', (email, name, picture))
+def save_user(cursor, connection, email: str, name: str, picture: str):
+    cursor.execute('INSERT INTO users (email, name, picture) VALUES (%s, %s, %s) ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, picture = EXCLUDED.picture', (email, name, picture))
     connection.commit()
-
-def get_user_api_key(cursor, email: str):
-    cursor.execute('SELECT gemini_api_key FROM users WHERE email=%s', (email,))
-    result = cursor.fetchone()
-    if result and result[0]:
-        try:
-            encrypted_key_base64 = result[0].encode('utf-8')
-            encrypted_key = base64.urlsafe_b64decode(encrypted_key_base64)
-            decrypted_key = cipher.decrypt(encrypted_key).decode('utf-8')
-            logger.debug(f"Fetched decrypted API key {decrypted_key} for {email}")
-            return decrypted_key
-        except (binascii.Error, ValueError, cryptography.fernet.InvalidToken) as e:
-            logger.error(f"Error decrypting API key for {email}: {e}")
-            return None
-    logger.debug(f"No API key found for {email}")
-    return None
 
 def get_message_count_within_timeframe(cursor, email, timeframe):
     """
@@ -124,7 +141,6 @@ def get_user_chat_messages(cursor, email: str, timestamp=None):
 
 def save_summary(cursor, conn, email: str, summary: str, timestamp):
     cursor.execute('INSERT INTO summaries (email, summary, timestamp) VALUES (%s, %s, %s) ON CONFLICT (email) DO UPDATE SET summary = EXCLUDED.summary, timestamp = EXCLUDED.timestamp', (email, summary, timestamp))
-    # cursor.execute('INSERT INTO summaries (email, summary, timestamp) VALUES (%s, %s, %s)', (email, summary))
     conn.commit()
 
 def get_latest_summary(cursor, email: str):
