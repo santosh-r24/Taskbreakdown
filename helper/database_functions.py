@@ -69,22 +69,24 @@ def fetch_task_ids(cursor, email: str):
     cursor.execute('SELECT task_ids FROM goal_plan WHERE email=%s', (email,))
     result = cursor.fetchone()
     if result and result[0]:
+        if isinstance(result[0], dict):
+            return result[0]
         return json.loads(result[0])
     return {}
 
 def save_task_ids(cursor, connection, email: str, task_id: str, date: datetime):
-    logger.debug("Tasks are being saved ")
+    logger.debug("Tasks are being saved")
     task_date = date.strftime('%Y-%m-%d')
     task_id_entry = {task_date: task_id}
+    
+    # Insert or update task_ids, handling NULL task_ids by setting it to the new entry.
     cursor.execute('''
-        UPDATE goal_plan
-        SET task_ids = '{}'
-        WHERE email = %s AND task_ids IS NULL
-    ''', (email,))
-    cursor.execute(
-        'INSERT INTO goal_plan (email, task_ids) VALUES (%s, %s) ON CONFLICT (email) DO UPDATE SET task_ids = goal_plan.task_ids || %s::jsonb',
-        (email, json.dumps(task_id_entry), json.dumps(task_id_entry))
-    )
+        INSERT INTO goal_plan (email, task_ids)
+        VALUES (%s, %s)
+        ON CONFLICT (email) DO UPDATE
+        SET task_ids = COALESCE(goal_plan.task_ids, '{}'::jsonb) || %s::jsonb
+    ''', (email, json.dumps(task_id_entry), json.dumps(task_id_entry)))
+
     connection.commit()
 
 def is_user_present(cursor, email: str) -> bool:
