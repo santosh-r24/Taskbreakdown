@@ -5,6 +5,7 @@ import json
 import streamlit as st
 import google.generativeai as genai 
 from logzero import logger
+
 import helper.database_functions as db_funcs
 import helper.utils as utils
 
@@ -30,9 +31,7 @@ def initialise_model_setup():
                     ii. If the tasks are not synced to google, inform the user to sync the tasks to google before attempting this. **DO NOT PROMPT FOR ADDITIONAL DETAILS FOR FUNCTION CALLING**
 
                 4. If a function call returns an error or unexpected result, inform the user with a clear and helpful message, suggesting possible next steps or alternatives.
-
                 5. If a plan is provided but not synced to google, let the user know they can sync to google tasks.
-
                 6. If a question is irrelevant to the SMART framework and task breakdowns, politely respond, "Sorry, I can't help with this request.".
                 """
     
@@ -60,12 +59,10 @@ def initialise_model_setup():
         "fetch_tasks": utils.fetch_tasks_from_google_tasks,
         "add_or_update_task": utils.add_or_update_task_to_google_tasks
     }
-    # tool_functions = [utils.fetch_tasks, utils.add_or_update_task]
     st.session_state['summary_model'] = genai.GenerativeModel('gemini-1.5-flash', system_instruction=summary_behavior, generation_config=generation_config_summary)
     st.session_state['chat_model'] = genai.GenerativeModel('gemini-1.5-flash', system_instruction=system_behavior, generation_config=generation_config_assistant, tools=functions.values())
     st.session_state['plan_model']  = genai.GenerativeModel('gemini-1.5-flash', system_instruction=json_system_behavior, generation_config=generation_config_json)
-
-
+    
 def generate_plan_response(prompt:str, model:genai.GenerativeModel, db=None, cursor=None):
     messages = copy.deepcopy(st.session_state['messages'])
     messages.append({"role":"user", "parts": [prompt]})
@@ -110,9 +107,7 @@ def generate_response(messages:list, model:genai.GenerativeModel, max_tokens = 5
         messages = [{"role": "model", "parts": [summary]}] + messages[-5:]
         st.session_state['messages'] = messages[-5:]
     messages = copy.deepcopy(messages)
-
     _append_conditional_messages(messages)
-
     response = model.generate_content(messages)
     candidate = response.candidates[0]
     logger.debug(f"candidate is -> {candidate}")
@@ -124,7 +119,6 @@ def generate_response(messages:list, model:genai.GenerativeModel, max_tokens = 5
             break
 
     _handle_llm_function_call(messages, function_call)
-    
     return response
 
 def _append_conditional_messages(messages):
@@ -158,7 +152,6 @@ def _handle_llm_function_call(messages, function_call = None):
         function_args_dict = utils.map_composite_to_dict(function_call.args)
         logger.debug(f'response for function args: {function_args}\n response for function dict {function_args_dict} type of this{type(function_args_dict)}')
         function_result = []
-        # Call the corresponding function and get the result
         if function_name == "fetch_tasks_from_google_tasks":
             if st.session_state['task_ids_generated']:
                 due_date = function_args_dict.get('due_date', None)

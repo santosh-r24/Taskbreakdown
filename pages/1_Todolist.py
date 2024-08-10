@@ -13,7 +13,7 @@ def initialise_side_bar_components():
     Contains components that are present in the side bar, apart from pages.
     """
     with st.sidebar:
-        
+
         date_markdown = '''
         Set the start and due dates for your training plan.
         '''.strip()
@@ -28,6 +28,7 @@ def initialise_side_bar_components():
         time_markdown = '''
         Set the start and end time for you can allocate to train per your training plan.
         '''.strip()
+        
         set_time = st.toggle(label="Schedule Time :timer_clock:", help=time_markdown)
         if set_time:
             with st.spinner("Schedule is being updated.."):

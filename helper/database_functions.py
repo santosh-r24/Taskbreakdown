@@ -1,7 +1,6 @@
 import streamlit as st
 import psycopg2
 import json
-from cryptography.fernet import Fernet
 from logzero import logger
 import datetime
 
@@ -25,8 +24,7 @@ def initialize_database():
         FOREIGN KEY(email) REFERENCES users(email)
     )
     ''')
-
-    # Create a new table goal_plan that stores plan, tasks_id (from google tasks), and dates foregin key being email, and references user
+    
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS chat_messages (
         id SERIAL PRIMARY KEY,
@@ -50,6 +48,7 @@ def initialize_database():
 
     connection.commit()
     return connection, cursor
+
 
 def check_if_google_tasks_are_created(cursor, email:str) -> bool:
     cursor.execute('SELECT task_ids FROM goal_plan WHERE email=%s', (email,))
@@ -99,8 +98,8 @@ def save_user(cursor, connection, email: str, name: str, picture: str):
 
 def get_message_count_within_timeframe(cursor, email, timeframe):
     """
-    cursor: 
-    email: 
+    cursor: cursor
+    email: email of user
     timeframe: duration till which rate_limit will apply to cap messages. This is set to 1 hour by default.
     
     returns
