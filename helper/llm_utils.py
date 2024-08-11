@@ -4,7 +4,9 @@ import datetime
 import json
 import streamlit as st
 import google.generativeai as genai 
+from google.protobuf.struct_pb2 import Struct
 from logzero import logger
+
 import helper.database_functions as db_funcs
 import helper.utils as utils
 
@@ -119,7 +121,10 @@ def generate_response(messages:list, model:genai.GenerativeModel, max_tokens = 5
             function_call = part.function_call
             break
 
-    _handle_llm_function_call(messages, function_call)
+    final_reponse = _handle_llm_function_call(messages, response, function_call)
+    if final_reponse:
+        return final_reponse
+    
     return response
 
 def _append_conditional_messages(messages):
@@ -142,7 +147,7 @@ def _append_conditional_messages(messages):
     if st.session_state['task_ids_generated']:
         messages[-1]['parts'][0] += f'\n Tasks are synced to google'
     
-def _handle_llm_function_call(messages, function_call = None):
+def _handle_llm_function_call(messages, response, function_call = None):
     """
     Handles function calls if content.parts contains it.
     """
@@ -165,12 +170,26 @@ def _handle_llm_function_call(messages, function_call = None):
         else:
             logger.debug("Unknown function being hit")
             function_result.append({"error": "Unknown function"})
-
-        function_response = {"role": "user", "parts": [{"text": str(function_result)}]}
-        messages.append(function_response)
+        s = Struct()
+        s.update({"result":function_result})
+        function_response = genai.protos.Part(
+            function_response=genai.protos.FunctionResponse(name=function_name, response=s)
+        )
+        new_messages = [
+            {
+                "role": "model",
+                "parts": response.candidates[0].content.parts
+            },
+            {
+                "role": "user",
+                "parts": [function_response]
+            },
+        ]
+        messages.extend(new_messages)
         final_response = st.session_state['chat_model'].generate_content(messages)
         logger.debug(f"final response = {final_response}")
         return final_response
+    return None
 
 def summarize_history(messages:list):
     """

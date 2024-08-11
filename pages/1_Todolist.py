@@ -76,11 +76,11 @@ if __name__ == "__main__":
                     with st.spinner("Generating response... please wait"):
                         response = llm_utils.generate_response(messages=st.session_state['messages'], model=st.session_state['chat_model'], db=db, cursor=cursor)
                     with st.chat_message("model"):
-                        parts = response.candidates[0].content.parts
-                        # Concatenate the text from all parts (if there are multiple)
-                        full_text = ''.join(part.text for part in parts if hasattr(part, 'text'))
-                        st.markdown(full_text)
-                        # st.markdown(response.text)
+                        st.markdown(response.text)
+                        # parts = response._result.candidates[0].content.parts
+                        # # Concatenate the text from all parts (if there are multiple)
+                        # full_text = ''.join(part.text for part in parts if hasattr(part, 'text'))
+                        # st.markdown(full_text)
                 # Add assistant response to chat history
                 st.session_state['messages'].append({"role":"model", "parts": [response.text]})
                 st.session_state['display_messages'].append({"role":"model", "parts": [response.text]})

@@ -75,7 +75,7 @@ def fetch_task_ids(cursor, email: str):
     return {}
 
 def save_task_ids(cursor, connection, email: str, task_id: str, date: datetime):
-    logger.debug("Tasks are being saved")
+    # logger.debug("Tasks are being saved")
     task_date = date.strftime('%Y-%m-%d')
     task_id_entry = {task_date: task_id}
     

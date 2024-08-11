@@ -288,7 +288,7 @@ def add_or_update_task_to_google_tasks(dummy_arg: str = "") -> list:
                                 'notes': result.get('notes', ''),
                                 'web_link': result.get('webViewLink', '')})
             db_funcs.save_task_ids(cursor, db, st.session_state['user_info']['email'], result['id'], date_obj)
-            logger.debug("Saved and added to google tasks")
+            # logger.debug("Saved and added to google tasks")
         except HttpError as error:
             logger.debug("error when syncing")
             function_result.append(f'An error occurred while adding/updating the task: {error}')
