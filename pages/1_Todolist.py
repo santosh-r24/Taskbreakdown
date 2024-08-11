@@ -14,7 +14,8 @@ def initialise_side_bar_components():
     """
     with st.sidebar:
         date_markdown = '''Set the start and due dates for your training plan.'''.strip()
-        set_date = st.toggle(label="Set Timelines :date:", help=date_markdown)
+        date_toggle_default = st.session_state.get('start_date') is not None and st.session_state.get('end_date') is not None
+        set_date = st.toggle(label="Set Timelines :date:", help=date_markdown, value=date_toggle_default)
         if set_date:
             with st.spinner("Timeline is being updated.."):
                 with st.container(border=True, height=200):
@@ -24,7 +25,8 @@ def initialise_side_bar_components():
         
         time_markdown = '''Set the start and end time for you can allocate to train per your training plan.'''.strip()
         
-        set_time = st.toggle(label="Schedule Time :timer_clock:", help=time_markdown)
+        time_toggle_default = st.session_state.get('start_time') is not None and st.session_state.get('end_time') is not None
+        set_time = st.toggle(label="Schedule Time :timer_clock:", help=time_markdown, value=time_toggle_default)
         if set_time:
             with st.container(border=True, height=200):
                 st.session_state['start_time'] = st.time_input("Set start time",  value=st.session_state['start_time'])
@@ -77,10 +79,6 @@ if __name__ == "__main__":
                         response = llm_utils.generate_response(messages=st.session_state['messages'], model=st.session_state['chat_model'], db=db, cursor=cursor)
                     with st.chat_message("model"):
                         st.markdown(response.text)
-                        # parts = response._result.candidates[0].content.parts
-                        # # Concatenate the text from all parts (if there are multiple)
-                        # full_text = ''.join(part.text for part in parts if hasattr(part, 'text'))
-                        # st.markdown(full_text)
                 # Add assistant response to chat history
                 st.session_state['messages'].append({"role":"model", "parts": [response.text]})
                 st.session_state['display_messages'].append({"role":"model", "parts": [response.text]})

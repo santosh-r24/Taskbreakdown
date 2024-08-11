@@ -45,17 +45,17 @@ def initialize_previous_messages():
         st.session_state['display_messages'] = cached_get_user_chat_messages(st.session_state['user_info']['email'], None)
     
     if 'messages_loaded' not in st.session_state:
-        with st.spinner("Fetching previous messages"):
-            logger.info("Summary is being fetched")
-            summary, latest_summary_timestamp = cached_get_latest_summary(st.session_state['user_info']['email'])
-            st.session_state['latest_summary'] = summary
-            if summary:
-                new_messages = cached_get_user_chat_messages(st.session_state['user_info']['email'], latest_summary_timestamp)
-                st.session_state['messages'] = new_messages
-            else:
-                st.session_state['messages'] = st.session_state['display_messages']
-            st.session_state['messages_loaded'] = True
-            logger.info(f"Messages are initialised for {st.session_state['user_info']['email']}")
+        # with st.spinner("Fetching previous messages"):
+        logger.info("Summary is being fetched")
+        summary, latest_summary_timestamp = cached_get_latest_summary(st.session_state['user_info']['email'])
+        st.session_state['latest_summary'] = summary
+        if summary:
+            new_messages = cached_get_user_chat_messages(st.session_state['user_info']['email'], latest_summary_timestamp)
+            st.session_state['messages'] = new_messages
+        else:
+            st.session_state['messages'] = st.session_state['display_messages']
+        st.session_state['messages_loaded'] = True
+        logger.info(f"Messages are initialised for {st.session_state['user_info']['email']}")
 
 def _initialize_api_key():
     """

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 Updates pushed in this commit.
  
 ### Added
+- Toggle buttons are set to true if time and dates are fetched from plan
 ### Changed
 ### Fixed
 - Attribute error when generating a reponse after a function call. 
