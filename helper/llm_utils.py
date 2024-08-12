@@ -24,18 +24,21 @@ def initialise_model_setup():
                     b. If not, ask questions to gather additional context to ensure the goal fits the SMART framework. Ask about the time the user can dedicate to the goal and the level of support required.
                     
                 2.Generate an appropriate function call if:
-                a. If the user requests to sync/add/update tasks to Google Tasks, call the function `add_or_update_task_to_google_tasks`. Don't suggest 
+                a. If the user requests to sync/add/update tasks to Google Tasks, call the function `add_or_update_task_to_google_tasks`.
                     i. if the plan is present call the function directly. **DO NOT PROMPT FOR ADDITIONAL DETAILS FOR FUNCTION CALLING**.
                     ii. If the plan is missing, inform the user to generate the plan 1st. **DO NOT PROMPT FOR ADDITIONAL DETAILS FOR FUNCTION CALLING**.
                 b. If the user requests for feedback on progress/fetch tasks, call the function `fetch_tasks_from_google_tasks`.
                     i. if the tasks are synced to google call the function directly use the date parameter if mentioned, else set date to None. **DO NOT PROMPT FOR ADDITIONAL DETAILS FOR FUNCTION CALLING**.
                     ii. If the tasks are not synced to google, inform the user to sync the tasks to google before attempting this. **DO NOT PROMPT FOR ADDITIONAL DETAILS FOR FUNCTION CALLING**
 
-                4. If a function call returns an error or unexpected result, inform the user with a clear and helpful message, suggesting possible next steps or alternatives.
-                5. If a plan is provided but a detailed_plan isn't generated, let the user know they can generate a detailed plan.
-                6. if a detailed_plan is generated, but the tasks are not synced to Google Tasks, let the user know they can Sync the tasks to google tasks.
-                7. Only calendar events can be synced and generated using the 'Send plan to calendar' button, this can be suggested only after detailed_plan is generated.
-                8. If a question is irrelevant to the SMART framework and task breakdowns, politely respond, "Sorry, I can't help with this request.".
+                4. If a function call returns an error or unexpected result, with a clear and helpful message, suggest possible next steps or alternatives.
+                5. If a plan is provided but 'key=detailed_plan' isn't present in the prompt, let the user know they can generate a detailed plan.
+                6. if 'key=detailed_plan' is present in the prompt, let the user know they can Sync the tasks to google tasks.
+                7. 'key=Not_Synced' indicates Tasks are not synced to Google tasks. 
+                8. 'key=TasksSynced' in prompt indicates Tasks are synced to Google Tasks.
+                9. 'key=No_plan' indicates no detailed plan is present. 
+                10. Only calendar events can be synced and generated using the 'Send plan to calendar' button, this can be suggested only after 'key=detailed_plan' is present in the prompt.
+                11. If a question is irrelevant to Goal setting and task breakdowns, politely respond, "Sorry, I can't help with this request.".
                 """
     
     json_system_behavior = """
@@ -137,15 +140,15 @@ def _append_conditional_messages(messages):
         messages[-1]['parts'][0] += f"""\t start_time:{st.session_state['start_time'].strftime('%H-%M-%S')}, end_time:{st.session_state['end_time'].strftime('%H-%M-%S')}"""
 
     if st.session_state['plan']:
-        messages[-1]['parts'][0] += f'\n The detailed_plan is: {st.session_state["plan"]}'
+        messages[-1]['parts'][0] += f"\n 'key=detailed_plan' Plan = {st.session_state['plan']}"
     else:
-        messages[-1]['parts'][0] += f'\n No detailed_plan is generated'
+        messages[-1]['parts'][0] += f"\n 'key=No_plan'. No plans"
         
     if not st.session_state['task_ids_generated']:
-        messages[-1]['parts'][0] += f'\n Tasks not synced to google'
+        messages[-1]['parts'][0] += f"\n 'key=Not_Synced' not synced to Google"
     
     if st.session_state['task_ids_generated']:
-        messages[-1]['parts'][0] += f'\n Tasks are synced to google'
+        messages[-1]['parts'][0] += f"\n 'key=TasksSynced' are synced to Google Tasks"
     
 def _handle_llm_function_call(messages, response, function_call = None):
     """

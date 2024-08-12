@@ -1,15 +1,15 @@
 # ToDoListAgent
 
-This is a PoC for a todolist agent, which breaks down big goals into smaller tasks. This is a very simple PoC. Integrated memory into conversations now.
+This is a proof of concept Todolist agent, it breaks down big goals into smaller tasks following the SMART framework. It integrates with google suite to sync plans and tasks to Google Calendar, and Google tasks respectively. 
 
 ### Features:-
 1. Gets input from user, and ensures it follows the SMART framework.
 2. Uses Gemini Flash 1.5 to answer the prompt(if it adheres to the SMART framework).
-3. Uses postgres as database to store chat 
-4. Uses streamlit as an interface. 
+3. Uses postgres to store conversations. 
+4. streamlit is used as the web interface. 
 5. Older chats are summarised, model has exact past 5 chat context.
-6. Plans can be synced to calendar. 
-7. Plans can be synced to Google Tasks via chat.
+6. Plans can be synced to Google Calendar. 
+7. Tasks can be synced to Google Tasks.
 
 #### Instructions
 
@@ -24,3 +24,6 @@ This is a PoC for a todolist agent, which breaks down big goals into smaller tas
 9. The agent only *remembers* the latest summary (if present) and the messages post it.
 10. Delete chat in the side bar can be used to delete all chat interactions with the agent.
 11. Delete summary in the side bar, deletes all summaries.
+
+#### How to Use
+1. You can view the live app by going to https://taskbreakdown.streamlit.app/, and follow the instructions on How to begin.
