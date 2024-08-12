@@ -150,4 +150,4 @@ if __name__ == "__main__":
     **Need help? Contact support at [santoshramakrishnan24@gmail.com](mailto:santoshramakrishnan24@gmail.com) \
     Reach out to me on [Twitter](https://x.com/SantoshKutti24)**
     """)
-    st.markdown("© 2024 TaskBreakdown | [Privacy Policy](Privacy_Policy)")
+    st.markdown("""© 2024 TaskBreakdown | [Privacy Policy](Privacy_Policy)""")
