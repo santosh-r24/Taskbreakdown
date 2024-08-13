@@ -45,6 +45,8 @@ def initialise_side_bar_components():
             utils.delete_chat_records(cursor, db)
         if st.button("Reset summary", type="primary"):
             utils.delete_summary_records(cursor, db)
+        if st.button("Reset detailed Plan", type="primary"):
+            utils.delete_plan_records(cursor,db)
 
 if __name__ == "__main__":
     st.set_page_config(page_title='Todolist', page_icon=':memo:', initial_sidebar_state='expanded', layout='wide', menu_items={'Report a Bug':'https://forms.gle/C8Zv8hzvYhPPvDW16'})

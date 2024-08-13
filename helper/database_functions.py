@@ -180,3 +180,14 @@ def delete_summaries(cursor, connection, email:str):
         logger.error(f"Error clearing summaries for {email}: {e}")
         connection.rollback()
         return False
+    
+def delete_plan(cursor, connection, email:str):
+    """Delete detailed plan for a particular user. Returns True, if suceeded."""
+    try:
+        cursor.execute('DELETE FROM goal_plan WHERE email = %s', (email,))
+        connection.commit()
+        return True
+    except Exception as e:
+        logger.error(f"Error clearing plan for {email}: {e}")
+        connection.rollback()
+        return False

@@ -155,6 +155,19 @@ def delete_summary_records(cursor, connection):
         cached_get_latest_summary.clear()
         st.rerun()
 
+@st.dialog("Delete detailed plan", width="small")
+def delete_plan_records(cursor, connection):
+    """
+    Function to clear detailed plan records from the user. This function is called when the Delete detailed plan button is clicked.
+    """
+    st.warning("All chat records associated will be deleted!")
+    st.write("Type '**delete plan**' to proceed")
+    delete_check = st.text_input("Enter delete key")
+    if st.button("Submit") and delete_check == "delete plan":
+        db_funcs.delete_plan(cursor, connection, st.session_state['user_info']['email'])
+        st.session_state['plan'] = None
+        st.rerun()
+
 def get_calendar_service():
     creds = Credentials(
         token=st.session_state['credentials']['token'],
