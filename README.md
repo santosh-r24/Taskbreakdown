@@ -79,7 +79,7 @@ Setup google console project details, database url, and google api in streamlit 
 
 5. **Run the app:**
    ```
-   streamlit run app.py
+   streamlit run Home.py
    ```
 
 ### Future Enhancements
