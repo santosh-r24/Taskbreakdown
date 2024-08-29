@@ -1,4 +1,4 @@
-# ToDoListAgent
+# Taskbreakdown
 
 ## Table of Contents
 - [Overview](#Overview)
@@ -10,14 +10,14 @@
 This is a Todolist agent, it breaks down big goals into smaller tasks following the [SMART](https://www.atlassian.com/blog/productivity/how-to-write-smart-goals) framework. It integrates with google suite to sync plans and tasks to Google Calendar, and Google tasks respectively.
 
 #### Usefulness
-ToDoListAgent is designed for individuals who struggle with managing large, complex goals. Whether they are professionals, students, or anyone with significant projects, the agent simplifies the process of goal setting and tracking by breaking down objectives into actionable tasks. This tool is particularly helpful for those who need a structured approach to achieve their goals but may be overwhelmed by the scale or complexity of the tasks involved.
+Taskbreakdown is designed for individuals who struggle with managing large, complex goals. Whether they are professionals, students, or anyone with significant projects, the agent simplifies the process of goal setting and tracking by breaking down objectives into actionable tasks. This tool is particularly helpful for those who need a structured approach to achieve their goals but may be overwhelmed by the scale or complexity of the tasks involved.
 
 By utilizing the SMART framework, the agent ensures that goals are Specific, Measurable, Achievable, Relevant, and Time-bound, making it easier for users to define and pursue their objectives effectively. The integration with Google Suite allows users to sync their plans and tasks, ensuring that they are reminded of their responsibilities and deadlines, leading to improved productivity and a better ability to manage time.
 
 #### Impactfulness
-ToDoListAgent positively impacts users by enhancing their ability to achieve personal and professional goals. By providing a clear and structured plan, it reduces the mental burden associated with planning and task management. The tool promotes better time management and goal achievement, contributing to users' overall well-being and success.
+Taskbreakdown positively impacts users by enhancing their ability to achieve personal and professional goals. By providing a clear and structured plan, it reduces the mental burden associated with planning and task management. The tool promotes better time management and goal achievement, contributing to users' overall well-being and success.
 
-In addition, ToDoListAgent’s integration with widely-used tools like Google Calendar and Google Tasks means it can seamlessly fit into users’ existing workflows, making it easier to adopt and more likely to be used consistently. This ease of integration and use makes the agent a valuable tool for improving productivity and reducing stress related to goal management.
+In addition, Taskbreakdown’s integration with widely-used tools like Google Calendar and Google Tasks means it can seamlessly fit into users’ existing workflows, making it easier to adopt and more likely to be used consistently. This ease of integration and use makes the agent a valuable tool for improving productivity and reducing stress related to goal management.
 
 ### Features
 1. Gets input from user, and ensures it follows the SMART framework.
